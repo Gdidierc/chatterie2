@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <title>ChatterieSync · Tableau de bord</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="{{ request.url_for('static', path='styles.css') }}" />
+    <script defer src="{{ request.url_for('static', path='app.js') }}"></script>
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>ChatterieSync</h1>
+      <p>Gestion locale de la chatterie Maine Coon</p>
+    </header>
+    <main>
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Chats adultes</h2>
+          <button type="button" class="refresh" data-target="cats">Actualiser</button>
+        </div>
+        <ul id="cats-list" class="list">
+          {% if cats %}
+            {% for cat in cats %}
+              <li>
+                <strong>{{ cat.call_name }}</strong>
+                {% if cat.pedigree_name %}<span class="muted">({{ cat.pedigree_name }})</span>{% endif %}
+                {% if cat.sex %}<span class="badge">{{ cat.sex }}</span>{% endif %}
+                {% if cat.status %}<span class="badge badge-soft">{{ cat.status }}</span>{% endif %}
+                {% if cat.birth_date %}<span class="muted">né(e) le {{ cat.birth_date }}</span>{% endif %}
+              </li>
+            {% endfor %}
+          {% else %}
+            <li class="empty">Aucun chat enregistré pour l'instant.</li>
+          {% endif %}
+        </ul>
+        <form id="cat-form" class="form">
+          <h3>Ajouter un chat</h3>
+          <div class="form-grid">
+            <label>Nom d'usage
+              <input type="text" name="call_name" required />
+            </label>
+            <label>Nom de pedigree
+              <input type="text" name="pedigree_name" />
+            </label>
+            <label>Date de naissance
+              <input type="date" name="birth_date" />
+            </label>
+            <label>Sexe
+              <select name="sex">
+                <option value="">--</option>
+                <option value="male">Mâle</option>
+                <option value="female">Femelle</option>
+              </select>
+            </label>
+            <label>Couleur / EMS
+              <input type="text" name="color_ems" placeholder="ex: MCO n 22" />
+            </label>
+            <label>Statut
+              <select name="status">
+                <option value="">--</option>
+                <option value="reproducteur">Reproducteur</option>
+                <option value="reproductrice">Reproductrice</option>
+                <option value="retraité">Retraité</option>
+                <option value="chaton">Chaton</option>
+              </select>
+            </label>
+          </div>
+          <button type="submit">Enregistrer</button>
+          <p class="helper">Seul le nom d'usage est obligatoire. Les autres champs sont optionnels.</p>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Portées</h2>
+          <button type="button" class="refresh" data-target="litters">Actualiser</button>
+        </div>
+        <ul id="litters-list" class="list">
+          {% if litters %}
+            {% for litter in litters %}
+              <li>
+                <strong>{{ litter.name }}</strong>
+                <span class="muted">Reine #{{ litter.queen_id }} × Étalon #{{ litter.sire_id }}</span>
+                {% if litter.birth_date %}<span class="badge">Nés le {{ litter.birth_date }}</span>{% endif %}
+                {% if litter.mating_date %}<span class="muted">Saillie {{ litter.mating_date }}</span>{% endif %}
+                {% if litter.notes %}<span class="muted">{{ litter.notes }}</span>{% endif %}
+              </li>
+            {% endfor %}
+          {% else %}
+            <li class="empty">Aucune portée enregistrée pour l'instant.</li>
+          {% endif %}
+        </ul>
+        <form id="litter-form" class="form">
+          <h3>Planifier une portée</h3>
+          <div class="form-grid">
+            <label>Nom de portée
+              <input type="text" name="name" required />
+            </label>
+            <label>ID de la femelle (queen)
+              <input type="number" name="queen_id" min="1" required />
+            </label>
+            <label>ID du mâle (sire)
+              <input type="number" name="sire_id" min="1" required />
+            </label>
+            <label>Date de saillie
+              <input type="date" name="mating_date" />
+            </label>
+            <label>Date de naissance
+              <input type="date" name="birth_date" />
+            </label>
+            <label>Notes
+              <textarea name="notes" rows="2"></textarea>
+            </label>
+          </div>
+          <button type="submit">Créer</button>
+          <p class="helper">Utilisez les identifiants des chats ci-dessus pour lier la portée.</p>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Familles en attente</h2>
+          <button type="button" class="refresh" data-target="leads">Actualiser</button>
+        </div>
+        <ul id="leads-list" class="list">
+          {% if leads %}
+            {% for lead in leads %}
+              <li>
+                <strong>{{ lead.first_name }} {{ lead.last_name }}</strong>
+                {% if lead.email %}<span class="muted">{{ lead.email }}</span>{% endif %}
+                {% if lead.phone %}<span class="muted">{{ lead.phone }}</span>{% endif %}
+                {% if lead.status %}<span class="badge badge-soft">{{ lead.status }}</span>{% endif %}
+                {% if lead.preferred_color or lead.preferred_gender %}
+                  <span class="muted">Préférences : {{ lead.preferred_color or '—' }} / {{ lead.preferred_gender or '—' }}</span>
+                {% endif %}
+                {% if lead.notes %}<span class="muted">{{ lead.notes }}</span>{% endif %}
+              </li>
+            {% endfor %}
+          {% else %}
+            <li class="empty">Aucun lead enregistré pour l'instant.</li>
+          {% endif %}
+        </ul>
+        <form id="lead-form" class="form">
+          <h3>Ajouter une famille</h3>
+          <div class="form-grid">
+            <label>Prénom
+              <input type="text" name="first_name" required />
+            </label>
+            <label>Nom
+              <input type="text" name="last_name" required />
+            </label>
+            <label>Email
+              <input type="email" name="email" />
+            </label>
+            <label>Téléphone
+              <input type="tel" name="phone" />
+            </label>
+            <label>Préférence couleur
+              <input type="text" name="preferred_color" />
+            </label>
+            <label>Préférence sexe
+              <select name="preferred_gender">
+                <option value="">--</option>
+                <option value="male">Mâle</option>
+                <option value="female">Femelle</option>
+                <option value="indifferent">Peu importe</option>
+              </select>
+            </label>
+            <label>Notes
+              <textarea name="notes" rows="2"></textarea>
+            </label>
+          </div>
+          <button type="submit">Ajouter à la liste d'attente</button>
+          <p class="helper">Collectez rapidement les informations essentielles d'une famille intéressée.</p>
+        </form>
+      </section>
+    </main>
+    <footer class="app-footer">
+      <p>Application locale — vos données restent sur votre machine. Synchronisez ensuite votre dossier <code>data/</code> avec votre service préféré.</p>
+    </footer>
+  </body>
+</html>
