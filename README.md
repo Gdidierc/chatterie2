@@ -1,47 +1,1928 @@
-# ChatterieSync Backend
+From 2cb0b9b8e7d96658743de6befd94ed6e34a93d57 Mon Sep 17 00:00:00 2001
+From: Gdidierc <roelandtsgregoire@gmail.com>
+Date: Sat, 11 Oct 2025 18:11:50 +0200
+Subject: [PATCH] Add local HTML dashboard for FastAPI chatterie app
 
-Prototype d'API FastAPI pour la gestion locale d'une chatterie de Maine Coons en Belgique.
+---
+ README.md                         |  48 ++++-
+ backend/app/database.py           |  39 ++++
+ backend/app/main.py               | 137 ++++++++++++++
+ backend/app/models.py             | 230 +++++++++++++++++++++++
+ backend/app/routers/__init__.py   |   3 +
+ backend/app/routers/cats.py       | 122 ++++++++++++
+ backend/app/routers/compliance.py |  66 +++++++
+ backend/app/routers/leads.py      | 115 ++++++++++++
+ backend/app/routers/litters.py    | 107 +++++++++++
+ backend/app/schemas.py            | 297 ++++++++++++++++++++++++++++++
+ backend/app/static/app.js         | 211 +++++++++++++++++++++
+ backend/app/static/styles.css     | 246 +++++++++++++++++++++++++
+ backend/app/templates/index.html  | 182 ++++++++++++++++++
+ backend/requirements.txt          |   6 +
+ 14 files changed, 1808 insertions(+), 1 deletion(-)
+ create mode 100644 backend/app/database.py
+ create mode 100644 backend/app/main.py
+ create mode 100644 backend/app/models.py
+ create mode 100644 backend/app/routers/__init__.py
+ create mode 100644 backend/app/routers/cats.py
+ create mode 100644 backend/app/routers/compliance.py
+ create mode 100644 backend/app/routers/leads.py
+ create mode 100644 backend/app/routers/litters.py
+ create mode 100644 backend/app/schemas.py
+ create mode 100644 backend/app/static/app.js
+ create mode 100644 backend/app/static/styles.css
+ create mode 100644 backend/app/templates/index.html
+ create mode 100644 backend/requirements.txt
 
-## Fonctionnalités incluses
-
-- Gestion des chats (profils complets, génétique, santé, mesures).
-- Suivi des portées et chatons (journal de poids, statuts, mise à jour des informations).
-- CRM familles adoptantes (leads, interactions, réservations, suivis post-adoption).
-- Conformité & documents (rappels légaux paramétrables, pièces jointes).
-- Export ZIP d'un chat ou d'une portée (métadonnées JSON + fichiers joints).
-
-## Démarrage rapide
-
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
-
-Ensuite ouvrez `http://127.0.0.1:8000/` dans votre navigateur pour accéder au tableau de bord HTML local-first. 
-L'API reste disponible sur `http://127.0.0.1:8000` et la documentation interactive sur `http://127.0.0.1:8000/docs`.
-
-## Structure
-
-```
-backend/
-  app/
-    main.py            # Application FastAPI, interface HTML et exports ZIP
-    database.py        # Initialisation SQLite locale
-    models.py          # Modèles SQLModel couvrant l'élevage
-    schemas.py         # Schémas Pydantic pour I/O
-    routers/           # Routes modulaires (chats, portées, leads, conformité)
-  requirements.txt     # Dépendances Python
-```
-
-La base de données SQLite est stockée dans `data/chatterie.db` (créée automatiquement).
-
-## Étapes suivantes possibles
-
-- Calcul automatique du COI via import de pedigree.
-- Génération de PDF (contrats, fiches) depuis des modèles.
-- Synchronisation Drive (Google/Nextcloud) pour les pièces jointes.
-- Tableaux de bord (statistiques santé, reproduction, adoption).
-- Interface front-end locale (Electron/Tauri ou PWA) alimentée par cette API.
+diff --git a/README.md b/README.md
+index 8f80fca..682d8e6 100644
+--- a/README.md
++++ b/README.md
+@@ -1 +1,47 @@
+-# chatterie2
+\ No newline at end of file
++# ChatterieSync Backend
++
++Prototype d'API FastAPI pour la gestion locale d'une chatterie de Maine Coons en Belgique.
++
++## Fonctionnalités incluses
++
++- Gestion des chats (profils complets, génétique, santé, mesures).
++- Suivi des portées et chatons (journal de poids, statuts, mise à jour des informations).
++- CRM familles adoptantes (leads, interactions, réservations, suivis post-adoption).
++- Conformité & documents (rappels légaux paramétrables, pièces jointes).
++- Export ZIP d'un chat ou d'une portée (métadonnées JSON + fichiers joints).
++
++## Démarrage rapide
++
++```bash
++cd backend
++python -m venv .venv
++source .venv/bin/activate
++pip install -r requirements.txt
++uvicorn app.main:app --reload
++```
++
++Ensuite ouvrez `http://127.0.0.1:8000/` dans votre navigateur pour accéder au tableau de bord HTML local-first. 
++L'API reste disponible sur `http://127.0.0.1:8000` et la documentation interactive sur `http://127.0.0.1:8000/docs`.
++
++## Structure
++
++```
++backend/
++  app/
++    main.py            # Application FastAPI, interface HTML et exports ZIP
++    database.py        # Initialisation SQLite locale
++    models.py          # Modèles SQLModel couvrant l'élevage
++    schemas.py         # Schémas Pydantic pour I/O
++    routers/           # Routes modulaires (chats, portées, leads, conformité)
++  requirements.txt     # Dépendances Python
++```
++
++La base de données SQLite est stockée dans `data/chatterie.db` (créée automatiquement).
++
++## Étapes suivantes possibles
++
++- Calcul automatique du COI via import de pedigree.
++- Génération de PDF (contrats, fiches) depuis des modèles.
++- Synchronisation Drive (Google/Nextcloud) pour les pièces jointes.
++- Tableaux de bord (statistiques santé, reproduction, adoption).
++- Interface front-end locale (Electron/Tauri ou PWA) alimentée par cette API.
+diff --git a/backend/app/database.py b/backend/app/database.py
+new file mode 100644
+index 0000000..d2b3d6f
+--- /dev/null
++++ b/backend/app/database.py
+@@ -0,0 +1,39 @@
++from __future__ import annotations
++
++from contextlib import contextmanager
++from pathlib import Path
++from typing import Iterator
++
++from sqlmodel import Session, SQLModel, create_engine
++
++
++DB_PATH = Path(__file__).resolve().parents[2] / "data" / "chatterie.db"
++DB_PATH.parent.mkdir(parents=True, exist_ok=True)
++
++engine = create_engine(f"sqlite:///{DB_PATH}", connect_args={"check_same_thread": False})
++
++
++def init_db() -> None:
++    """Initialise the SQLite database by creating all declared tables."""
++
++    SQLModel.metadata.create_all(engine)
++
++
++@contextmanager
++def session_scope() -> Iterator[Session]:
++    """Provide a transactional scope around a series of operations."""
++
++    with Session(engine) as session:
++        try:
++            yield session
++            session.commit()
++        except Exception:
++            session.rollback()
++            raise
++
++
++def get_session() -> Iterator[Session]:
++    """FastAPI dependency that yields a session."""
++
++    with Session(engine) as session:
++        yield session
+diff --git a/backend/app/main.py b/backend/app/main.py
+new file mode 100644
+index 0000000..3bf2184
+--- /dev/null
++++ b/backend/app/main.py
+@@ -0,0 +1,137 @@
++from __future__ import annotations
++
++from datetime import datetime
++from pathlib import Path
++from typing import Any
++from zipfile import ZipFile
++
++from fastapi import Depends, FastAPI, HTTPException, Request
++from fastapi.middleware.cors import CORSMiddleware
++from fastapi.responses import FileResponse, HTMLResponse
++from fastapi.staticfiles import StaticFiles
++from fastapi.templating import Jinja2Templates
++from sqlalchemy import or_
++from sqlmodel import Session, select
++
++from .database import get_session, init_db
++from .models import Cat, DocumentAttachment, FamilyLead, Kitten, Litter
++from .routers import cats, compliance, leads, litters
++
++BASE_DIR = Path(__file__).resolve().parent
++
++templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
++
++app = FastAPI(title="ChatterieSync", version="0.1.0")
++
++app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
++
++app.add_middleware(
++    CORSMiddleware,
++    allow_origins=["*"],
++    allow_credentials=True,
++    allow_methods=["*"],
++    allow_headers=["*"],
++)
++
++app.include_router(cats.router)
++app.include_router(litters.router)
++app.include_router(leads.router)
++app.include_router(compliance.router)
++
++
++@app.on_event("startup")
++def on_startup() -> None:
++    init_db()
++
++
++@app.get("/", response_class=HTMLResponse)
++def index(
++    request: Request,
++    session: Session = Depends(get_session),
++):
++    cats = session.exec(select(Cat).order_by(Cat.call_name)).all()
++    litters = session.exec(
++        select(Litter).order_by(Litter.birth_date.is_(None), Litter.birth_date.desc())
++    ).all()
++    leads = session.exec(select(FamilyLead).order_by(FamilyLead.id.desc())).all()
++    return templates.TemplateResponse(
++        "index.html",
++        {
++            "request": request,
++            "cats": cats,
++            "litters": litters,
++            "leads": leads,
++        },
++    )
++
++
++@app.get("/health")
++def healthcheck() -> dict[str, str]:
++    return {"status": "ok"}
++
++
++@app.get("/exports/cat/{cat_id}")
++def export_cat(cat_id: int, session: Session = Depends(get_session)):
++    cat = session.get(Cat, cat_id)
++    if not cat:
++        raise HTTPException(status_code=404, detail="Chat introuvable")
++
++    attachments = session.exec(
++        select(DocumentAttachment).where(DocumentAttachment.cat_id == cat_id)
++    ).all()
++    kittens = session.exec(select(Kitten).where(or_(Kitten.sire_id == cat_id, Kitten.dam_id == cat_id))).all()
++
++    export_dir = Path("data/exports")
++    export_dir.mkdir(parents=True, exist_ok=True)
++    timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
++    export_path = export_dir / f"cat_{cat_id}_{timestamp}.zip"
++
++    with ZipFile(export_path, "w") as zf:
++        # metadata json
++        import json
++
++        metadata: dict[str, Any] = {
++            "cat": cat.dict(),
++            "kittens": [kitten.dict() for kitten in kittens],
++            "attachments": [attachment.dict() for attachment in attachments],
++        }
++        zf.writestr("metadata.json", json.dumps(metadata, default=str, indent=2))
++        for attachment in attachments:
++            path = Path(attachment.file_path)
++            if path.exists():
++                zf.write(path, arcname=path.name)
++
++    return FileResponse(export_path)
++
++
++@app.get("/exports/litter/{litter_id}")
++def export_litter(litter_id: int, session: Session = Depends(get_session)):
++    litter = session.get(Litter, litter_id)
++    if not litter:
++        raise HTTPException(status_code=404, detail="Portée introuvable")
++
++    kittens = session.exec(select(Kitten).where(Kitten.litter_id == litter_id)).all()
++    attachments = session.exec(
++        select(DocumentAttachment).where(DocumentAttachment.litter_id == litter_id)
++    ).all()
++
++    export_dir = Path("data/exports")
++    export_dir.mkdir(parents=True, exist_ok=True)
++    timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
++    export_path = export_dir / f"litter_{litter_id}_{timestamp}.zip"
++
++    with ZipFile(export_path, "w") as zf:
++        import json
++
++        metadata: dict[str, Any] = {
++            "litter": litter.dict(),
++            "kittens": [kitten.dict() for kitten in kittens],
++            "attachments": [attachment.dict() for attachment in attachments],
++        }
++        zf.writestr("metadata.json", json.dumps(metadata, default=str, indent=2))
++        for attachment in attachments:
++            path = Path(attachment.file_path)
++            if path.exists():
++                zf.write(path, arcname=path.name)
++
++    return FileResponse(export_path)
+diff --git a/backend/app/models.py b/backend/app/models.py
+new file mode 100644
+index 0000000..1be14f4
+--- /dev/null
++++ b/backend/app/models.py
+@@ -0,0 +1,230 @@
++from __future__ import annotations
++
++from datetime import date, datetime
++from typing import Optional
++
++from pydantic import EmailStr
++from sqlmodel import Field, Relationship, SQLModel
++
++
++class Cat(SQLModel, table=True):
++    __tablename__ = "cats"
++
++    id: Optional[int] = Field(default=None, primary_key=True)
++    call_name: str = Field(index=True)
++    pedigree_name: Optional[str] = None
++    birth_date: Optional[date] = None
++    sex: Optional[str] = Field(description="M/F")
++    color_ems: Optional[str] = Field(description="EMS code (FIFe)")
++    status: str = Field(default="chaton")
++    microchip: Optional[str] = Field(default=None, unique=True, index=True)
++    cat_id_number: Optional[str] = Field(default=None, description="CatID/registre")
++    eu_passport: Optional[str] = None
++    is_neutered: bool = Field(default=False)
++    sire_id: Optional[int] = Field(default=None, foreign_key="cats.id")
++    dam_id: Optional[int] = Field(default=None, foreign_key="cats.id")
++    notes: Optional[str] = None
++
++    sire: Optional["Cat"] = Relationship(sa_relationship_kwargs={"remote_side": "Cat.id"}, back_populates="offspring_sired")
++    dam: Optional["Cat"] = Relationship(sa_relationship_kwargs={"remote_side": "Cat.id"}, back_populates="offspring_dam")
++    offspring_sired: list["Cat"] = Relationship(back_populates="sire", sa_relationship_kwargs={"primaryjoin": "Cat.sire_id==Cat.id"})
++    offspring_dam: list["Cat"] = Relationship(back_populates="dam", sa_relationship_kwargs={"primaryjoin": "Cat.dam_id==Cat.id"})
++    genetic_tests: list["CatGeneticTest"] = Relationship(back_populates="cat")
++    health_events: list["CatHealthEvent"] = Relationship(back_populates="cat")
++    measurements: list["CatMeasurement"] = Relationship(back_populates="cat")
++
++
++class CatGeneticTest(SQLModel, table=True):
++    __tablename__ = "cat_genetic_tests"
++
++    id: Optional[int] = Field(default=None, primary_key=True)
++    cat_id: int = Field(foreign_key="cats.id", index=True)
++    test_name: str
++    status: str = Field(description="Result summary such as OK/Porteur/Atteint")
++    laboratory: Optional[str] = None
++    result_date: Optional[date] = None
++    document_path: Optional[str] = None
++
++    cat: "Cat" = Relationship(back_populates="genetic_tests")
++
++
++class CatHealthEvent(SQLModel, table=True):
++    __tablename__ = "cat_health_events"
++
++    id: Optional[int] = Field(default=None, primary_key=True)
++    cat_id: int = Field(foreign_key="cats.id", index=True)
++    category: str = Field(description="vaccin, vermifuge, antiparasitaire, visite, etc.")
++    label: str
++    event_date: date
++    due_date: Optional[date] = Field(default=None, description="Next reminder if applicable")
++    notes: Optional[str] = None
++    document_path: Optional[str] = None
++
++    cat: "Cat" = Relationship(back_populates="health_events")
++
++
++class CatMeasurement(SQLModel, table=True):
++    __tablename__ = "cat_measurements"
++
++    id: Optional[int] = Field(default=None, primary_key=True)
++    cat_id: int = Field(foreign_key="cats.id", index=True)
++    recorded_at: datetime = Field(default_factory=datetime.utcnow)
++    weight_kg: Optional[float] = None
++    length_cm: Optional[float] = None
++    feeding_notes: Optional[str] = None
++
++    cat: "Cat" = Relationship(back_populates="measurements")
++
++
++class HeatCycle(SQLModel, table=True):
++    __tablename__ = "heat_cycles"
++
++    id: Optional[int] = Field(default=None, primary_key=True)
++    queen_id: int = Field(foreign_key="cats.id", index=True)
++    start_date: date
++    end_date: Optional[date] = None
++    intensity: Optional[str] = None
++    notes: Optional[str] = None
++
++
++class MatingRecord(SQLModel, table=True):
++    __tablename__ = "mating_records"
++
++    id: Optional[int] = Field(default=None, primary_key=True)
++    queen_id: int = Field(foreign_key="cats.id", index=True)
++    sire_id: int = Field(foreign_key="cats.id", index=True)
++    date: date
++    type: str = Field(description="interne/externe")
++    contract_path: Optional[str] = None
++    proof_path: Optional[str] = None
++    notes: Optional[str] = None
++
++
++class PregnancyTimeline(SQLModel, table=True):
++    __tablename__ = "pregnancies"
++
++    id: Optional[int] = Field(default=None, primary_key=True)
++    queen_id: int = Field(foreign_key="cats.id", index=True)
++    sire_id: int = Field(foreign_key="cats.id", index=True)
++    mating_id: Optional[int] = Field(default=None, foreign_key="mating_records.id")
++    due_date: Optional[date] = Field(description="Estimated due date")
++    confirmation_date: Optional[date] = None
++    notes: Optional[str] = None
++
++
++class Litter(SQLModel, table=True):
++    __tablename__ = "litters"
++
++    id: Optional[int] = Field(default=None, primary_key=True)
++    name: str
++    queen_id: int = Field(foreign_key="cats.id", index=True)
++    sire_id: int = Field(foreign_key="cats.id", index=True)
++    mating_date: Optional[date] = None
++    birth_date: Optional[date] = None
++    notes: Optional[str] = None
++
++
++class Kitten(SQLModel, table=True):
++    __tablename__ = "kittens"
++
++    id: Optional[int] = Field(default=None, primary_key=True)
++ litter_id : int = Champ(foreign_key="litters.id", index=True)
++ nom : str
++ sire_id : Facultatif[int] = Champ(par défaut = Aucun, foreign_key ="cats.id")
++ dam_id : Facultatif[int] = Champ(par défaut = Aucun, foreign_key ="cats.id")
++ sexe : Optional[str] = Aucun
++ color_estimate : Optional[str] = Aucun
++ birth_time : Optional[datetime] = Aucun
++ birth_weight_g : Facultatif [int] = Aucun
++ collar_color : Optional[str] = Aucun
++ statut : str = Champ(par défaut="disponible")
++ notes : Optional[str] = Aucun
++
++
++classe KittenWeight(SQLModel, table=True) :
++ __tablename__ = "poids_chaton"
++
++ id : Facultatif[int] = Champ(par défaut = Aucun, clé_primaire = Vrai)
++ kitten_id : int = Champ(foreign_key="kittens.id", index=True)
++ recorded_at : datetime = Champ(default_factory=datetime.utcnow)
++ weight_g : Facultatif[int] = Aucun
++
++
++classe FamilyLead(SQLModel, table=True) :
++ __tablename__ = "family_leads"
++
++ id : Facultatif[int] = Champ(par défaut = Aucun, clé_primaire = Vrai)
++ prénom : str
++ nom_de_famille : str
++ email : Optional[EmailStr] = Aucun
++ téléphone : Optional[str] = Aucun
++ has_children : Facultatif[booléen] = Aucun
++ has_other_pets : Optional[str] = Aucun
++ allergy_notes : Optional[str] = Aucun
++ budget_range : Optional[str] = Aucun
++ preferred_color : Optional[str] = Aucun
++ preferred_gender : Optional[str] = Aucun
++ tags : Facultatif[str] = Champ(par défaut = Aucun, description ="balises séparées par des virgules")
++ qualification_score : Facultatif [int] = Champ (par défaut = Aucun, description = 0-100 »)
++ statut : str = Champ(par défaut="prospect")
++ notes : Optional[str] = Aucun
++
++
++classe LeadInteraction(SQLModel, table=True) :
++ __tablename__ = "interactions_prospects"
++
++ id : Facultatif[int] = Champ(par défaut = Aucun, clé_primaire = Vrai)
++ lead_id : int = Champ(foreign_key="family_leads.id", index=True)
++ interaction_date : datetime = Champ(default_factory=datetime.utcnow)
++ canal : Optional[str] = Aucun
++ résumé : str
++
++
++class Réservation(SQLModel, table=True) :
++ __tablename__ = "réservations"
++
++ id : Facultatif[int] = Champ(par défaut = Aucun, clé_primaire = Vrai)
++ kitten_id : int = Champ(foreign_key="kittens.id", index=True)
++ lead_id : int = Champ(foreign_key="family_leads.id", index=True)
++ reservation_date : date
++ deposit_amount : Optional[float] = Aucun
++ payment_schedule : Optional[str] = Aucun
++ kyc_status : Facultatif[str] = Champ(par défaut ="en ​​attente")
++ contract_path : Optional[str] = Aucun
++
++
++classe AdoptionFollowUp(SQLModel, table=True) :
++ __tablename__ = "adoption_followups"
++
++ id : Facultatif[int] = Champ(par défaut = Aucun, clé_primaire = Vrai)
++ reservation_id : int = Champ(foreign_key="reservations.id", index=True)
++ followup_date : date
++ reminder_type: str = Champ(description="J+30, J+180, etc.")
++ terminé : bool = Champ (par défaut = Faux)
++ notes : Optional[str] = Aucun
++
++
++class ComplianceReminder(SQLModel, table=True) :
++ __tablename__ = "rappels_de_conformité"
++
++ id : Facultatif[int] = Champ(par défaut = Aucun, clé_primaire = Vrai)
++ cat_id : Facultatif [int] = Champ(par défaut = Aucun, foreign_key ="cats.id", index = True)
++ kitten_id : Facultatif [int] = Champ(par défaut = Aucun, foreign_key ="kittens.id", index = True)
++ due_date : date
++ catégorie : str
++ description : str
++ terminé : bool = Champ (par défaut = Faux)
++ completed_at : Optional[datetime] = Aucun
++
++
++class DocumentAttachment(SQLModel, table=True) :
++    __tablename__ = "document_attachments"
++
++    id: Optional[int] = Field(default=None, primary_key=True)
++    cat_id: Optional[int] = Field(default=None, foreign_key="cats.id", index=True)
++    kitten_id: Optional[int] = Field(default=None, foreign_key="kittens.id", index=True)
++    litter_id: Optional[int] = Field(default=None, foreign_key="litters.id", index=True)
++    lead_id: Optional[int] = Field(default=None, foreign_key="family_leads.id", index=True)
++    file_path: str
++    label: Optional[str] = None
++    description: Optional[str] = None
+diff --git a/backend/app/routers/__init__.py b/backend/app/routers/__init__.py
+new file mode 100644
+index 0000000..97af6c6
+--- /dev/null
++++ b/backend/app/routers/__init__.py
+@@ -0,0 +1,3 @@
++from . import cats, compliance, leads, litters  # noqa: F401
++
++__all__ = ["cats", "compliance", "leads", "litters"]
+diff --git a/backend/app/routers/cats.py b/backend/app/routers/cats.py
+new file mode 100644
+index 0000000..63407ac
+--- /dev/null
++++ b/backend/app/routers/cats.py
+@@ -0,0 +1,122 @@
++from __future__ import annotations
++
++from fastapi import APIRouter, Depends, HTTPException
++from sqlmodel import select
++
++from ..database import get_session
++from ..models import Cat, CatGeneticTest, CatHealthEvent, CatMeasurement
++from ..schemas import (
++    CatCreate,
++    CatRead,
++    CatUpdate,
++    GeneticTestCreate,
++    GeneticTestRead,
++    HealthEventCreate,
++    HealthEventRead,
++    MeasurementCreate,
++    MeasurementRead,
++)
++
++router = APIRouter(prefix="/cats", tags=["cats"])
++
++
++@router.post("", response_model=CatRead)
++def create_cat(cat_in: CatCreate, session=Depends(get_session)):
++    cat = Cat(**cat_in.dict())
++    session.add(cat)
++    session.commit()
++    session.refresh(cat)
++    return cat
++
++
++@router.get("", response_model=list[CatRead])
++def list_cats(session=Depends(get_session)):
++    cats = session.exec(select(Cat).order_by(Cat.call_name)).all()
++    return cats
++
++
++@router.get("/{cat_id}", response_model=CatRead)
++def get_cat(cat_id: int, session=Depends(get_session)):
++    cat = session.get(Cat, cat_id)
++    if not cat:
++        raise HTTPException(status_code=404, detail="Chat introuvable")
++    return cat
++
++
++@router.patch("/{cat_id}", response_model=CatRead)
++def update_cat(cat_id: int, cat_update: CatUpdate, session=Depends(get_session)):
++    cat = session.get(Cat, cat_id)
++    if not cat:
++        raise HTTPException(status_code=404, detail="Chat introuvable")
++    for field, value in cat_update.dict(exclude_unset=True).items():
++        setattr(cat, field, value)
++    session.add(cat)
++    session.commit()
++    session.refresh(cat)
++    return cat
++
++
++@router.delete("/{cat_id}", status_code=204)
++def delete_cat(cat_id: int, session=Depends(get_session)):
++    cat = session.get(Cat, cat_id)
++    if not cat:
++        raise HTTPException(status_code=404, detail="Chat introuvable")
++    session.delete(cat)
++    session.commit()
++
++
++@router.post("/{cat_id}/measurements", response_model=MeasurementRead)
++def add_measurement(cat_id: int, measurement_in: MeasurementCreate, session=Depends(get_session)):
++    if not session.get(Cat, cat_id):
++        raise HTTPException(status_code=404, detail="Chat introuvable")
++    measurement = CatMeasurement(cat_id=cat_id, **measurement_in.dict(exclude_unset=True))
++    session.add(measurement)
++    session.commit()
++    session.refresh(measurement)
++    return measurement
++
++
++@router.get("/{cat_id}/measurements", response_model=list[MeasurementRead])
++def list_measurements(cat_id: int, session=Depends(get_session)):
++    if not session.get(Cat, cat_id):
++        raise HTTPException(status_code=404, detail="Chat introuvable")
++    query = select(CatMeasurement).where(CatMeasurement.cat_id == cat_id).order_by(CatMeasurement.recorded_at)
++    return session.exec(query).all()
++
++
++@router.post("/{cat_id}/genetic-tests", response_model=GeneticTestRead)
++def add_genetic_test(cat_id: int, test_in: GeneticTestCreate, session=Depends(get_session)):
++    if not session.get(Cat, cat_id):
++        raise HTTPException(status_code=404, detail="Chat introuvable")
++    test = CatGeneticTest(cat_id=cat_id, **test_in.dict(exclude_unset=True))
++    session.add(test)
++    session.commit()
++    session.refresh(test)
++    return test
++
++
++@router.get("/{cat_id}/genetic-tests", response_model=list[GeneticTestRead])
++def list_genetic_tests(cat_id: int, session=Depends(get_session)):
++    if not session.get(Cat, cat_id):
++        raise HTTPException(status_code=404, detail="Chat introuvable")
++    query = select(CatGeneticTest).where(CatGeneticTest.cat_id == cat_id).order_by(CatGeneticTest.result_date.desc())
++    return session.exec(query).all()
++
++
++@router.post("/{cat_id}/health-events", response_model=HealthEventRead)
++def add_health_event(cat_id: int, event_in: HealthEventCreate, session=Depends(get_session)):
++    if not session.get(Cat, cat_id):
++        raise HTTPException(status_code=404, detail="Chat introuvable")
++    event = CatHealthEvent(cat_id=cat_id, **event_in.dict(exclude_unset=True))
++    session.add(event)
++    session.commit()
++    session.refresh(event)
++    return event
++
++
++@router.get("/{cat_id}/health-events", response_model=list[HealthEventRead])
++def list_health_events(cat_id: int, session=Depends(get_session)):
++    if not session.get(Cat, cat_id):
++        raise HTTPException(status_code=404, detail="Chat introuvable")
++    query = select(CatHealthEvent).where(CatHealthEvent.cat_id == cat_id).order_by(CatHealthEvent.event_date.desc())
++    return session.exec(query).all()
+diff --git a/backend/app/routers/compliance.py b/backend/app/routers/compliance.py
+new file mode 100644
+index 0000000..152cbd0
+--- /dev/null
++++ b/backend/app/routers/compliance.py
+@@ -0,0 +1,66 @@
++from __future__ import annotations
++
++from fastapi import APIRouter, Depends, HTTPException
++from sqlmodel import select
++
++from ..database import get_session
++from ..models import ComplianceReminder, DocumentAttachment
++from ..schemas import (
++    ComplianceReminderCreate,
++    ComplianceReminderRead,
++    DocumentAttachmentCreate,
++    DocumentAttachmentRead,
++)
++
++router = APIRouter(prefix="/compliance", tags=["conformité"])
++
++
++@router.post("/reminders", response_model=ComplianceReminderRead)
++def create_reminder(reminder_in: ComplianceReminderCreate, session=Depends(get_session)):
++    reminder = ComplianceReminder(**reminder_in.dict(exclude_unset=True))
++    session.add(reminder)
++    session.commit()
++    session.refresh(reminder)
++    return reminder
++
++
++@router.get("/reminders", response_model=list[ComplianceReminderRead])
++def list_reminders(session=Depends(get_session), completed: bool | None = None):
++    query = select(ComplianceReminder)
++    if completed is not None:
++        query = query.where(ComplianceReminder.completed == completed)
++    query = query.order_by(ComplianceReminder.due_date)
++    return session.exec(query).all()
++
++
++@router.patch("/reminders/{reminder_id}", response_model=ComplianceReminderRead)
++def update_reminder(reminder_id: int, reminder_in: ComplianceReminderCreate, session=Depends(get_session)):
++    reminder = session.get(ComplianceReminder, reminder_id)
++    if not reminder:
++        raise HTTPException(status_code=404, detail="Rappel introuvable")
++    for field, value in reminder_in.dict(exclude_unset=True).items():
++        setattr(reminder, field, value)
++    session.add(reminder)
++    session.commit()
++    session.refresh(reminder)
++    return reminder
++
++
++@router.post("/attachments", response_model=DocumentAttachmentRead)
++def create_attachment(attachment_in: DocumentAttachmentCreate, session=Depends(get_session)):
++    attachment = DocumentAttachment(**attachment_in.dict(exclude_unset=True))
++    session.add(attachment)
++    session.commit()
++    session.refresh(attachment)
++    return attachment
++
++
++@router.get("/attachments", response_model=list[DocumentAttachmentRead])
++def list_attachments(session=Depends(get_session), cat_id: int | None = None, kitten_id: int | None = None):
++    query = select(DocumentAttachment)
++    if cat_id is not None:
++        query = query.where(DocumentAttachment.cat_id == cat_id)
++    if kitten_id is not None:
++        query = query.where(DocumentAttachment.kitten_id == kitten_id)
++    query = query.order_by(DocumentAttachment.id.desc())
++    return session.exec(query).all()
+diff --git a/backend/app/routers/leads.py b/backend/app/routers/leads.py
+new file mode 100644
+index 0000000..3557b69
+--- /dev/null
++++ b/backend/app/routers/leads.py
+@@ -0,0 +1,115 @@
++from __future__ import annotations
++
++from fastapi import APIRouter, Depends, HTTPException
++from sqlmodel import select
++
++from ..database import get_session
++from ..models import AdoptionFollowUp, FamilyLead, LeadInteraction, Reservation
++from ..schemas import (
++    AdoptionFollowUpCreate,
++    AdoptionFollowUpRead,
++    FamilyLeadCreate,
++    FamilyLeadRead,
++    FamilyLeadUpdate,
++    LeadInteractionCreate,
++    LeadInteractionRead,
++    ReservationCreate,
++    ReservationRead,
++)
++
++router = APIRouter(prefix="/leads", tags=["familles"])
++
++
++@router.post("", response_model=FamilyLeadRead)
++def create_lead(lead_in: FamilyLeadCreate, session=Depends(get_session)):
++    lead = FamilyLead(**lead_in.dict())
++    session.add(lead)
++    session.commit()
++    session.refresh(lead)
++    return lead
++
++
++@router.get("", response_model=list[FamilyLeadRead])
++def list_leads(session=Depends(get_session), status: str | None = None):
++    query = select(FamilyLead)
++    if status:
++        query = query.where(FamilyLead.status == status)
++    query = query.order_by(FamilyLead.qualification_score.is_(None), FamilyLead.qualification_score.desc(), FamilyLead.last_name)
++    return session.exec(query).all()
++
++
++@router.get("/{lead_id}", response_model=FamilyLeadRead)
++def get_lead(lead_id: int, session=Depends(get_session)):
++    lead = session.get(FamilyLead, lead_id)
++    if not lead:
++        raise HTTPException(status_code=404, detail="Famille introuvable")
++    return lead
++
++
++@router.patch("/{lead_id}", response_model=FamilyLeadRead)
++def update_lead(lead_id: int, lead_update: FamilyLeadUpdate, session=Depends(get_session)):
++    lead = session.get(FamilyLead, lead_id)
++    if not lead:
++        raise HTTPException(status_code=404, detail="Famille introuvable")
++    for field, value in lead_update.dict(exclude_unset=True).items():
++        setattr(lead, field, value)
++    session.add(lead)
++    session.commit()
++    session.refresh(lead)
++    return lead
++
++
++@router.post("/{lead_id}/interactions", response_model=LeadInteractionRead)
++def add_interaction(lead_id: int, interaction_in: LeadInteractionCreate, session=Depends(get_session)):
++    if not session.get(FamilyLead, lead_id):
++        raise HTTPException(status_code=404, detail="Famille introuvable")
++    interaction = LeadInteraction(lead_id=lead_id, **interaction_in.dict(exclude_unset=True))
++    session.add(interaction)
++    session.commit()
++    session.refresh(interaction)
++    return interaction
++
++
++@router.get("/{lead_id}/interactions", response_model=list[LeadInteractionRead])
++def list_interactions(lead_id: int, session=Depends(get_session)):
++    if not session.get(FamilyLead, lead_id):
++        raise HTTPException(status_code=404, detail="Famille introuvable")
++    query = select(LeadInteraction).where(LeadInteraction.lead_id == lead_id).order_by(LeadInteraction.interaction_date.desc())
++    return session.exec(query).all()
++
++
++@router.post("/reservations", response_model=ReservationRead)
++def create_reservation(reservation_in: ReservationCreate, session=Depends(get_session)):
++    if not session.get(FamilyLead, reservation_in.lead_id):
++        raise HTTPException(status_code=404, detail="Famille introuvable")
++    reservation = Reservation(**reservation_in.dict())
++    session.add(reservation)
++    session.commit()
++    session.refresh(reservation)
++    return reservation
++
++
++@router.get("/reservations", response_model=list[ReservationRead])
++def list_reservations(session=Depends(get_session)):
++    query = select(Reservation).order_by(Reservation.reservation_date.desc())
++    return session.exec(query).all()
++
++
++@router.post("/followups", response_model=AdoptionFollowUpRead)
++def create_followup(followup_in: AdoptionFollowUpCreate, session=Depends(get_session)):
++    if not session.get(Reservation, followup_in.reservation_id):
++        raise HTTPException(status_code=404, detail="Réservation introuvable")
++    followup = AdoptionFollowUp(**followup_in.dict())
++    session.add(followup)
++    session.commit()
++    session.refresh(followup)
++    return followup
++
++
++@router.get("/followups", response_model=list[AdoptionFollowUpRead])
++def list_followups(session=Depends(get_session), completed: bool | None = None):
++    query = select(AdoptionFollowUp)
++    if completed is not None:
++        query = query.where(AdoptionFollowUp.completed == completed)
++    query = query.order_by(AdoptionFollowUp.followup_date)
++    return session.exec(query).all()
+diff --git a/backend/app/routers/litters.py b/backend/app/routers/litters.py
+new file mode 100644
+index 0000000..95980bc
+--- /dev/null
++++ b/backend/app/routers/litters.py
+@@ -0,0 +1,107 @@
++from __future__ import annotations
++
++from fastapi import APIRouter, Depends, HTTPException
++from sqlmodel import select
++
++from ..database import get_session
++from ..models import Kitten, KittenWeight, Litter
++from ..schemas import (
++    KittenCreate,
++    KittenRead,
++    KittenUpdate,
++    KittenWeightCreate,
++    KittenWeightRead,
++    LitterCreate,
++    LitterRead,
++    LitterUpdate,
++)
++
++router = APIRouter(prefix="/litters", tags=["portées"])
++
++
++@router.post("", response_model=LitterRead)
++def create_litter(litter_in: LitterCreate, session=Depends(get_session)):
++    litter = Litter(**litter_in.dict())
++    session.add(litter)
++    session.commit()
++    session.refresh(litter)
++    return litter
++
++
++@router.get("", response_model=list[LitterRead])
++def list_litters(session=Depends(get_session)):
++    query = select(Litter).order_by(Litter.birth_date.is_(None), Litter.birth_date.desc())
++    return session.exec(query).all()
++
++
++@router.get("/{litter_id}", response_model=LitterRead)
++def get_litter(litter_id: int, session=Depends(get_session)):
++    litter = session.get(Litter, litter_id)
++    if not litter:
++        raise HTTPException(status_code=404, detail="Portée introuvable")
++    return litter
++
++
++@router.patch("/{litter_id}", response_model=LitterRead)
++def update_litter(litter_id: int, litter_update: LitterUpdate, session=Depends(get_session)):
++    litter = session.get(Litter, litter_id)
++    if not litter:
++        raise HTTPException(status_code=404, detail="Portée introuvable")
++    for field, value in litter_update.dict(exclude_unset=True).items():
++        setattr(litter, field, value)
++    session.add(litter)
++    session.commit()
++    session.refresh(litter)
++    return litter
++
++
++@router.post("/{litter_id}/kittens", response_model=KittenRead)
++def add_kitten(litter_id: int, kitten_in: KittenCreate, session=Depends(get_session)):
++    if litter_id != kitten_in.litter_id:
++        raise HTTPException(status_code=400, detail="Identifiant portée incohérent")
++    if not session.get(Litter, litter_id):
++        raise HTTPException(status_code=404, detail="Portée introuvable")
++    kitten = Kitten(**kitten_in.dict())
++    session.add(kitten)
++    session.commit()
++    session.refresh(kitten)
++    return kitten
++
++
++@router.get("/{litter_id}/kittens", response_model=list[KittenRead])
++def list_kittens(litter_id: int, session=Depends(get_session)):
++    if not session.get(Litter, litter_id):
++        raise HTTPException(status_code=404, detail="Portée introuvable")
++    query = select(Kitten).where(Kitten.litter_id == litter_id).order_by(Kitten.name)
++    return session.exec(query).all()
++
++@router.patch("/kittens/{kitten_id}", response_model=KittenRead)
++def update_kitten(kitten_id: int, kitten_update: KittenUpdate, session=Depends(get_session)):
++    kitten = session.get(Kitten, kitten_id)
++    if not kitten:
++        raise HTTPException(status_code=404, detail="Chaton introuvable")
++    for field, value in kitten_update.dict(exclude_unset=True).items():
++        setattr(kitten, field, value)
++    session.add(kitten)
++    session.commit()
++    session.refresh(kitten)
++    return kitten
++
++
++@router.post("/kittens/{kitten_id}/weights", response_model=KittenWeightRead)
++def add_kitten_weight(kitten_id: int, weight_in: KittenWeightCreate, session=Depends(get_session)):
++    if not session.get(Kitten, kitten_id):
++        raise HTTPException(status_code=404, detail="Chaton introuvable")
++    record = KittenWeight(kitten_id=kitten_id, **weight_in.dict(exclude_unset=True))
++    session.add(record)
++    session.commit()
++    session.refresh(record)
++    return record
++
++
++@router.get("/kittens/{kitten_id}/weights", response_model=list[KittenWeightRead])
++def list_kitten_weights(kitten_id: int, session=Depends(get_session)):
++    if not session.get(Kitten, kitten_id):
++        raise HTTPException(status_code=404, detail="Chaton introuvable")
++    query = select(KittenWeight).where(KittenWeight.kitten_id == kitten_id).order_by(KittenWeight.recorded_at)
++    return session.exec(query).all()
+diff --git a/backend/app/schemas.py b/backend/app/schemas.py
+new file mode 100644
+index 0000000..76131d1
+--- /dev/null
++++ b/backend/app/schemas.py
+@@ -0,0 +1,297 @@
++from __future__ import annotations
++
++from datetime import date, datetime
++from typing import Optional
++
++from pydantic import BaseModel, EmailStr
++
++
++class CatBase(BaseModel):
++    call_name: str
++    pedigree_name: Optional[str] = None
++    birth_date: Optional[date] = None
++    sex: Optional[str] = None
++    color_ems: Optional[str] = None
++    status: Optional[str] = None
++    microchip: Optional[str] = None
++    cat_id_number: Optional[str] = None
++    eu_passport: Optional[str] = None
++    is_neutered: Optional[bool] = None
++    sire_id: Optional[int] = None
++    dam_id: Optional[int] = None
++    notes: Optional[str] = None
++
++
++class CatCreate(CatBase):
++    pass
++
++
++class CatRead(CatBase):
++    id: int
++
++    class Config:
++        orm_mode = True
++
++
++class CatUpdate(BaseModel):
++    call_name: Optional[str] = None
++    pedigree_name: Optional[str] = None
++    birth_date: Optional[date] = None
++    sex: Optional[str] = None
++    color_ems: Optional[str] = None
++    status: Optional[str] = None
++    microchip: Optional[str] = None
++    cat_id_number: Optional[str] = None
++    eu_passport: Optional[str] = None
++    is_neutered: Optional[bool] = None
++    sire_id: Optional[int] = None
++    dam_id: Optional[int] = None
++    notes: Optional[str] = None
++
++
++class MeasurementCreate(BaseModel):
++    recorded_at: Optional[datetime] = None
++    weight_kg: Optional[float] = None
++    length_cm: Optional[float] = None
++    feeding_notes: Optional[str] = None
++
++
++class MeasurementRead(MeasurementCreate):
++    id: int
++
++    class Config:
++        orm_mode = True
++
++
++class GeneticTestCreate(BaseModel):
++    test_name: str
++    status: str
++    laboratory: Optional[str] = None
++    result_date: Optional[date] = None
++    document_path: Optional[str] = None
++
++
++class GeneticTestRead(GeneticTestCreate):
++    id: int
++
++    class Config:
++        orm_mode = True
++
++
++class HealthEventCreate(BaseModel):
++    category: str
++    label: str
++    event_date: date
++    due_date: Optional[date] = None
++    notes: Optional[str] = None
++    document_path: Optional[str] = None
++
++
++class HealthEventRead(HealthEventCreate):
++    id: int
++
++    class Config:
++        orm_mode = True
++
++
++class LitterBase(BaseModel):
++    name: str
++    queen_id: int
++    sire_id: int
++    mating_date: Optional[date] = None
++    birth_date: Optional[date] = None
++    notes: Optional[str] = None
++
++
++class LitterCreate(LitterBase):
++    pass
++
++
++class LitterUpdate(BaseModel):
++    name: Optional[str] = None
++    queen_id: Optional[int] = None
++    sire_id: Optional[int] = None
++    mating_date: Optional[date] = None
++    birth_date: Optional[date] = None
++    notes: Optional[str] = None
++
++
++class LitterRead(LitterBase):
++    id: int
++
++    class Config:
++        orm_mode = True
++
++
++class KittenBase(BaseModel):
++    name: str
++    sire_id: Optional[int] = None
++    dam_id: Optional[int] = None
++    sex: Optional[str] = None
++    color_estimate: Optional[str] = None
++    birth_time: Optional[datetime] = None
++    birth_weight_g: Optional[int] = None
++    collar_color: Optional[str] = None
++    status: Optional[str] = None
++    notes: Optional[str] = None
++
++
++class KittenCreate(KittenBase):
++    litter_id: int
++
++
++class KittenUpdate(BaseModel):
++    name: Optional[str] = None
++    sire_id: Optional[int] = None
++    dam_id: Optional[int] = None
++    sex: Optional[str] = None
++    color_estimate: Optional[str] = None
++    birth_time: Optional[datetime] = None
++    birth_weight_g: Optional[int] = None
++    collar_color: Optional[str] = None
++    status: Optional[str] = None
++    notes: Optional[str] = None
++
++
++class KittenRead(KittenBase):
++    id: int
++    litter_id: int
++
++    class Config:
++        orm_mode = True
++
++
++class KittenWeightCreate(BaseModel):
++    recorded_at: Optional[datetime] = None
++    weight_g: Optional[int] = None
++
++
++class KittenWeightRead(KittenWeightCreate):
++    id: int
++
++    class Config:
++        orm_mode = True
++
++
++class FamilyLeadBase(BaseModel):
++    first_name: str
++    last_name: str
++    email: Optional[EmailStr] = None
++    phone: Optional[str] = None
++    has_children: Optional[bool] = None
++    has_other_pets: Optional[str] = None
++    allergy_notes: Optional[str] = None
++    budget_range: Optional[str] = None
++    preferred_color: Optional[str] = None
++    preferred_gender: Optional[str] = None
++    tags: Optional[str] = None
++    qualification_score: Optional[int] = None
++    status: Optional[str] = None
++    notes: Optional[str] = None
++
++
++class FamilyLeadCreate(FamilyLeadBase):
++    pass
++
++
++class FamilyLeadRead(FamilyLeadBase):
++    id: int
++
++    class Config:
++        orm_mode = True
++
++
++class FamilyLeadUpdate(BaseModel):
++    first_name: Optional[str] = None
++    last_name: Optional[str] = None
++    email: Optional[EmailStr] = None
++    phone: Optional[str] = None
++    has_children: Optional[bool] = None
++    has_other_pets: Optional[str] = None
++    allergy_notes: Optional[str] = None
++    budget_range: Optional[str] = None
++    preferred_color: Optional[str] = None
++    preferred_gender: Optional[str] = None
++    tags: Optional[str] = None
++    qualification_score: Optional[int] = None
++    status: Optional[str] = None
++    notes: Optional[str] = None
++
++
++class LeadInteractionCreate(BaseModel):
++    interaction_date: Optional[datetime] = None
++    channel: Optional[str] = None
++    summary: str
++
++
++class LeadInteractionRead(LeadInteractionCreate):
++    id: int
++
++    class Config:
++        orm_mode = True
++
++
++class ReservationCreate(BaseModel):
++    kitten_id: int
++    lead_id: int
++    reservation_date: date
++    deposit_amount: Optional[float] = None
++    payment_schedule: Optional[str] = None
++    kyc_status: Optional[str] = None
++    contract_path: Optional[str] = None
++
++
++class ReservationRead(ReservationCreate):
++    id: int
++
++    class Config:
++        orm_mode = True
++
++
++class AdoptionFollowUpCreate(BaseModel):
++    reservation_id: int
++    followup_date: date
++    reminder_type: str
++    completed: Optional[bool] = None
++    notes: Optional[str] = None
++
++
++class AdoptionFollowUpRead(AdoptionFollowUpCreate):
++    id: int
++
++    class Config:
++        orm_mode = True
++
++
++class ComplianceReminderCreate(BaseModel):
++    cat_id: Optional[int] = None
++    kitten_id: Optional[int] = None
++    due_date: date
++    category: str
++    description: str
++    completed: Optional[bool] = None
++    completed_at: Optional[datetime] = None
++
++
++class ComplianceReminderRead(ComplianceReminderCreate):
++    id: int
++
++    class Config:
++        orm_mode = True
++
++
++class DocumentAttachmentCreate(BaseModel):
++    cat_id: Optional[int] = None
++    kitten_id: Optional[int] = None
++    litter_id: Optional[int] = None
++    lead_id: Optional[int] = None
++    file_path: str
++    label: Optional[str] = None
++    description: Optional[str] = None
++
++
++class DocumentAttachmentRead(DocumentAttachmentCreate):
++    id: int
++
++    class Config:
++        orm_mode = True
+diff --git a/backend/app/static/app.js b/backend/app/static/app.js
+new file mode 100644
+index 0000000..1da7d9e
+--- /dev/null
++++ b/backend/app/static/app.js
+@@ -0,0 +1,211 @@
++const apiBase = window.location.origin;
++
++function buildPayload(form, numericKeys = []) {
++  const data = new FormData(form);
++  const payload = {};
++  data.forEach((value, key) => {
++    if (value === null || value === "") {
++      return;
++    }
++    if (numericKeys.includes(key)) {
++      const parsed = Number(value);
++      if (!Number.isNaN(parsed)) {
++        payload[key] = parsed;
++      }
++      return;
++    }
++    payload[key] = value;
++  });
++  return payload;
++}
++
++function showMessage(form, text, type = "success") {
++  let notice = form.querySelector(".notice");
++  if (!notice) {
++    notice = document.createElement("div");
++    notice.className = "notice";
++    form.insertBefore(notice, form.firstChild);
++  }
++  notice.textContent = text;
++  notice.dataset.type = type;
++  notice.classList.toggle("error", type === "error");
++  notice.classList.toggle("success", type === "success");
++}
++
++async function fetchJSON(url, options) {
++  const response = await fetch(url, {
++    headers: { "Content-Type": "application/json" },
++    ...options,
++  });
++  if (!response.ok) {
++    let detail = `${response.status} ${response.statusText}`;
++    try {
++      const body = await response.json();
++      detail = body.detail || JSON.stringify(body);
++    } catch (err) {
++      // ignore JSON parse errors, keep status text
++    }
++    throw new Error(detail);
++  }
++  if (response.status === 204) {
++    return null;
++  }
++  return response.json();
++}
++
++async function loadCats() {
++  const list = document.querySelector("#cats-list");
++  if (!list) return;
++  try {
++    const cats = await fetchJSON(`${apiBase}/cats`, { method: "GET" });
++    list.innerHTML = "";
++    if (!cats.length) {
++      list.innerHTML = '<li class="empty">Aucun chat enregistré pour l\'instant.</li>';
++      return;
++    }
++    cats.forEach((cat) => {
++      const li = document.createElement("li");
++      li.innerHTML = `
++        <strong>${cat.call_name}</strong>
++        ${cat.pedigree_name ? `<span class="muted">(${cat.pedigree_name})</span>` : ""}
++        ${cat.sex ? `<span class="badge">${cat.sex}</span>` : ""}
++        ${cat.status ? `<span class="badge badge-soft">${cat.status}</span>` : ""}
++        ${cat.birth_date ? `<span class="muted">né(e) le ${cat.birth_date}</span>` : ""}
++      `;
++      list.appendChild(li);
++    });
++  } catch (error) {
++    list.innerHTML = `<li class="empty">Erreur lors du chargement : ${error.message}</li>`;
++  }
++}
++
++async function loadLitters() {
++  const list = document.querySelector("#litters-list");
++  if (!list) return;
++  try {
++    const litters = await fetchJSON(`${apiBase}/litters`, { method: "GET" });
++    list.innerHTML = "";
++    if (!litters.length) {
++      list.innerHTML = '<li class="empty">Aucune portée enregistrée pour l\'instant.</li>';
++      return;
++    }
++    litters.forEach((litter) => {
++      const li = document.createElement("li");
++      li.innerHTML = `
++        <strong>${litter.name}</strong>
++        <span class="muted">Reine #${litter.queen_id} × Étalon #${litter.sire_id}</span>
++        ${litter.birth_date ? `<span class="badge">Nés le ${litter.birth_date}</span>` : ""}
++        ${litter.mating_date ? `<span class="muted">Saillie ${litter.mating_date}</span>` : ""}
++        ${litter.notes ? `<span class="muted">${litter.notes}</span>` : ""}
++      `;
++      list.appendChild(li);
++    });
++  } catch (error) {
++    list.innerHTML = `<li class="empty">Erreur lors du chargement : ${error.message}</li>`;
++  }
++}
++
++async function loadLeads() {
++  const list = document.querySelector("#leads-list");
++  if (!list) return;
++  try {
++    const leads = await fetchJSON(`${apiBase}/leads`, { method: "GET" });
++    list.innerHTML = "";
++    if (!leads.length) {
++      list.innerHTML = '<li class="empty">Aucun lead enregistré pour l\'instant.</li>';
++      return;
++    }
++    leads.forEach((lead) => {
++      const li = document.createElement("li");
++      li.innerHTML = `
++        <strong>${lead.first_name} ${lead.last_name}</strong>
++        ${lead.email ? `<span class="muted">${lead.email}</span>` : ""}
++        ${lead.phone ? `<span class="muted">${lead.phone}</span>` : ""}
++        ${lead.status ? `<span class="badge badge-soft">${lead.status}</span>` : ""}
++        ${lead.preferred_color || lead.preferred_gender ? `<span class="muted">Préférences : ${lead.preferred_color || "—"} / ${lead.preferred_gender || "—"}</span>` : ""}
++        ${lead.notes ? `<span class="muted">${lead.notes}</span>` : ""}
++      `;
++      list.appendChild(li);
++    });
++  } catch (error) {
++    list.innerHTML = `<li class="empty">Erreur lors du chargement : ${error.message}</li>`;
++  }
++}
++
++function attachFormHandlers() {
++  const catForm = document.querySelector("#cat-form");
++  if (catForm) {
++    catForm.addEventListener("submit", async (event) => {
++      event.preventDefault();
++      const payload = buildPayload(catForm);
++      try {
++        await fetchJSON(`${apiBase}/cats`, {
++          method: "POST",
++          body: JSON.stringify(payload),
++        });
++        showMessage(catForm, "Chat enregistré !", "success");
++        catForm.reset();
++        await loadCats();
++      } catch (error) {
++        showMessage(catForm, `Impossible d'enregistrer : ${error.message}`, "error");
++      }
++    });
++  }
++
++  const litterForm = document.querySelector("#litter-form");
++  if (litterForm) {
++    litterForm.addEventListener("submit", async (event) => {
++      event.preventDefault();
++      const payload = buildPayload(litterForm, ["queen_id", "sire_id"]);
++      try {
++        await fetchJSON(`${apiBase}/litters`, {
++          method: "POST",
++          body: JSON.stringify(payload),
++        });
++        showMessage(litterForm, "Portée créée !", "success");
++        litterForm.reset();
++        await loadLitters();
++      } catch (error) {
++        showMessage(litterForm, `Impossible de créer la portée : ${error.message}`, "error");
++      }
++    });
++  }
++
++  const leadForm = document.querySelector("#lead-form");
++  if (leadForm) {
++    leadForm.addEventListener("submit", async (event) => {
++      event.preventDefault();
++      const payload = buildPayload(leadForm);
++      try {
++        await fetchJSON(`${apiBase}/leads`, {
++          method: "POST",
++          body: JSON.stringify(payload),
++        });
++        showMessage(leadForm, "Famille ajoutée !", "success");
++        leadForm.reset();
++        await loadLeads();
++      } catch (error) {
++ showMessage(leadForm, `Impossible d'ajouter la famille : ${error.message}`, "error");
++ }
++ });
++ }
++}
++
++fonction attachRefreshButtons() {
++ document.querySelectorAll("bouton.refresh").forEach((bouton) => {
++ button.addEventListener("clic", () => {
++ const target = bouton.dataset.target;
++ si (cible === "chats") loadCats();
++ if (target === "portées") loadLitters();
++ si (cible === "leads") loadLeads();
++ });
++ });
++}
++
++window.addEventListener("DOMContentLoaded", () => {
++ attachFormHandlers();
++ attachRefreshButtons();
++ chargerChats();
++ chargerLitters();
++ chargerLeads();
++});
+diff --git a/backend/app/static/styles.css b/backend/app/static/styles.css
+nouveau mode de fichier 100644
+index 0000000..63f3ce0
+--- /dev/null
++++ b/backend/app/static/styles.css
+@@ -0,0 +1,246 @@
++:racine {
++ palette de couleurs : clair foncé ;
++ famille de polices : « Inter », « Segoe UI », system-ui, -apple-system, sans-serif ;
++ couleur d'arrière-plan : #f3f4f6 ;
++ couleur : #1f2933 ;
++}
++
++corps {
++ marge : 0 ;
++ hauteur min : 100vh ;
++ affichage : flex ;
++ flex-direction : colonne ;
++}
++
++.en-tête d'application {
++ arrière-plan : dégradé linéaire (135 degrés, #4c1d95, #6d28d9) ;
++ couleur : #fff ;
++ rembourrage : 2,5 rem 1,5 rem 2 rem ;
++ alignement du texte : centre ;
++ boîte-ombre : 0 4px 16px rgba(76, 29, 149, 0.25);
++}
++
++.en-tête d'application h1 {
++ marge : 0 ;
++ taille de police : 2,4 rem ;
++}
++
++.en-tête d'application p {
++ marge : 0,5 rem 0 0 ;
++ taille de police : 1,05 rem ;
++ opacité : 0,9 ;
++}
++
++principal {
++ affichage : grille ;
++ écart : 1,5 rem ;
++ rembourrage : pince 2rem(1rem, 5vw, 3rem) 3rem ;
++ grid-template-columns : répéter(ajustement automatique, minmax(280px, 1fr));
++ flex : 1 0 auto ;
++}
++
++.panneau {
++ couleur d'arrière-plan : #fff ;
++ rayon de bordure : 18 px ;
++ rembourrage : 1,5 rem ;
++ boîte-ombre : 0 16px 40px rgba(15, 23, 42, 0,08);
++ affichage : flex ;
++ flex-direction : colonne ;
++ écart : 1rem ;
++}
++
++.en-tête du panneau {
++ affichage : flex ;
++ align-items : centre ;
++ justify-content : espace-entre ;
++ écart : 0,5 rem ;
++}
++
++.en-tête du panneau h2 {
++ marge : 0 ;
++ taille de police : 1,35 rem ;
++}
++
++.rafraîchir {
++ bordure : aucune ;
++ couleur d'arrière-plan : #ede9fe ;
++ couleur : #4c1d95 ;
++ remplissage : 0,5 rem 0,9 rem ;
++ rayon de bordure : 999 px ;
++ poids de police : 600 ;
++ curseur : pointeur ;
++ transition : transformation 0,15 s de facilité, boîte-ombre 0,15 s de facilité ;
++}
++
++.refresh:hover {
++ transformer : translateY(-1px);
++ boîte-ombre : 0 8px 16px rgba(109, 40, 217, 0,25);
++}
++
++.liste {
++ style-liste : aucun ;
++ remplissage : 0 ;
++ marge : 0 ;
++ affichage : flex ;
++ flex-direction : colonne ;
++ écart : 0,75 rem ;
++}
++
++.liste li {
++ couleur d'arrière-plan : #f9fafb ;
++ rayon de bordure : 12 px ;
++ rembourrage : 0,75 rem 1 rem ;
++ affichage : flex ;
++ flex-direction : colonne ;
++ écart : 0,25 rem ;
++ box-shadow : insertion 0 0 0 1px rgba(148, 163, 184, 0.25);
++}
++
++.liste li forte {
++ taille de police : 1,05 rem ;
++}
++
++.liste li .muted {
++ couleur : #6b7280 ;
++ taille de police : 0,9 rem ;
++}
++
++.badge {
++ affichage : inline-flex ;
++ align-items : centre ;
++ justifier-contenu : centre ;
++ remplissage : 0,1 rem 0,5 rem ;
++ rayon de bordure : 999 px ;
++ couleur d'arrière-plan : #4c1d95 ;
++ couleur : #fff ;
++ taille de police : 0,75 rem ;
++ poids de police : 600 ;
++ text-transform : majuscule ;
++ espacement des lettres : 0,02 em ;
++ marge supérieure : 0,25 rem ;
++}
++
++.badge-soft {
++ couleur d'arrière-plan : #c7d2fe ;
++ couleur : #312e81 ;
++}
++
++.vide {
++ couleur : #9ca3af ;
++ style de police : italique ;
++ alignement du texte : centre ;
++ rembourrage : 1,5 rem 0,5 rem ;
++}
++
++.form {
++ affichage : flex ;
++ flex-direction : colonne ;
++ écart : 1rem ;
++ rembourrage supérieur : 0,5 rem ;
++  border-top: 1px solid rgba(148, 163, 184, 0.3);
++}
++
++.notice {
++  padding: 0.65rem 0.85rem;
++  border-radius: 12px;
++  font-size: 0.9rem;
++  border-left: 4px solid transparent;
++  background-color: rgba(76, 29, 149, 0.08);
++  color: #312e81;
++}
++
++.notice.success {
++  border-left-color: #22c55e;
++  background-color: rgba(34, 197, 94, 0.12);
++  color: #166534;
++}
++
++.notice.error {
++  border-left-color: #ef4444;
++  background-color: rgba(239, 68, 68, 0.12);
++  color: #7f1d1d;
++}
++
++.form h3 {
++  margin: 0;
++  font-size: 1.1rem;
++}
++
++.form-grid {
++  display: grid;
++  gap: 0.75rem;
++  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
++}
++
++label {
++  display: flex;
++  flex-direction: column;
++  gap: 0.35rem;
++  font-weight: 600;
++  font-size: 0.9rem;
++}
++
++input,
++select,
++textarea {
++  padding: 0.55rem 0.7rem;
++  border-radius: 10px;
++  border: 1px solid rgba(148, 163, 184, 0.6);
++  font: inherit;
++  transition: border-color 0.15s ease, box-shadow 0.15s ease;
++  background-color: #fff;
++}
++
++input:focus,
++select:focus,
++textarea:focus {
++  outline: none;
++  border-color: #6d28d9;
++  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.25);
++}
++
++button[type="submit"] {
++  align-self: flex-start;
++  background: linear-gradient(135deg, #6d28d9, #7c3aed);
++  color: #fff;
++  border: none;
++  border-radius: 999px;
++  padding: 0.6rem 1.4rem;
++  font-weight: 600;
++  cursor: pointer;
++  transition: transform 0.2s ease, box-shadow 0.2s ease;
++}
++
++button[type="submit"]:hover {
++  transform: translateY(-1px);
++  box-shadow: 0 12px 20px rgba(109, 40, 217, 0.35);
++}
++
++.helper {
++  margin: 0;
++  font-size: 0.85rem;
++  color: #6b7280;
++}
++
++.app-footer {
++  padding: 1.25rem 1.5rem 2rem;
++  text-align: center;
++  color: #6b7280;
++  font-size: 0.85rem;
++}
++
++code {
++  background-color: rgba(99, 102, 241, 0.12);
++  padding: 0.15rem 0.35rem;
++  border-radius: 6px;
++}
++
++@media (max-width: 720px) {
++  .panel {
++    padding: 1.25rem;
++  }
++
++  .panel-header h2 {
++    font-size: 1.2rem;
++  }
++}
+diff --git a/backend/app/templates/index.html b/backend/app/templates/index.html
+new file mode 100644
+index 0000000..e92b0ad
+--- /dev/null
++++ b/backend/app/templates/index.html
+@@ -0,0 +1,182 @@
++<!DOCTYPE html>
++<html lang="fr">
++  <head>
++    <meta charset="utf-8" />
++    <title>ChatterieSync · Tableau de bord</title>
++    <meta name="viewport" content="width=device-width, initial-scale=1" />
++    <link rel="stylesheet" href="{{ request.url_for('static', path='styles.css') }}" />
++    <script defer src="{{ request.url_for('static', path='app.js') }}"></script>
++  </head>
++  <body>
++    <header class="app-header">
++      <h1>ChatterieSync</h1>
++      <p>Gestion locale de la chatterie Maine Coon</p>
++    </header>
++    <main>
++      <section class="panel">
++        <div class="panel-header">
++          <h2>Chats adultes</h2>
++          <button type="button" class="refresh" data-target="cats">Actualiser</button>
++        </div>
++        <ul id="cats-list" class="list">
++          {% if cats %}
++            {% for cat in cats %}
++              <li>
++                <strong>{{ cat.call_name }}</strong>
++                {% if cat.pedigree_name %}<span class="muted">({{ cat.pedigree_name }})</span>{% endif %}
++                {% if cat.sex %}<span class="badge">{{ cat.sex }}</span>{% endif %}
++                {% if cat.status %}<span class="badge badge-soft">{{ cat.status }}</span>{% endif %}
++                {% if cat.birth_date %}<span class="muted">né(e) le {{ cat.birth_date }}</span>{% endif %}
++              </li>
++            {% endfor %}
++          {% else %}
++            <li class="empty">Aucun chat enregistré pour l'instant.</li>
++          {% endif %}
++        </ul>
++        <form id="cat-form" class="form">
++          <h3>Ajouter un chat</h3>
++          <div class="form-grid">
++            <label>Nom d'usage
++              <input type="text" name="call_name" required />
++            </label>
++            <label>Nom de pedigree
++              <input type="text" name="pedigree_name" />
++            </label>
++            <label>Date de naissance
++              <input type="date" name="birth_date" />
++            </label>
++            <label>Sexe
++              <select name="sex">
++                <option value="">--</option>
++                <option value="male">Mâle</option>
++                <option value="female">Femelle</option>
++              </select>
++            </label>
++            <label>Couleur / EMS
++              <input type="text" name="color_ems" placeholder="ex: MCO n 22" />
++            </label>
++            <label>Statut
++              <select name="status">
++                <option value="">--</option>
++                <option value="reproducteur">Reproducteur</option>
++                <option value="reproductrice">Reproductrice</option>
++                <option value="retraité">Retraité</option>
++                <option value="chaton">Chaton</option>
++              </select>
++            </label>
++          </div>
++          <button type="submit">Enregistrer</button>
++          <p class="helper">Seul le nom d'usage est obligatoire. Les autres champs sont optionnels.</p>
++        </form>
++      </section>
++
++      <section class="panel">
++        <div class="panel-header">
++          <h2>Portées</h2>
++          <button type="button" class="refresh" data-target="litters">Actualiser</button>
++        </div>
++        <ul id="litters-list" class="list">
++          {% if litters %}
++            {% for litter in litters %}
++              <li>
++                <strong>{{ litter.name }}</strong>
++                <span class="muted">Reine #{{ litter.queen_id }} × Étalon #{{ litter.sire_id }}</span>
++                {% if litter.birth_date %}<span class="badge">Nés le {{ litter.birth_date }}</span>{% endif %}
++                {% if litter.mating_date %}<span class="muted">Saillie {{ litter.mating_date }}</span>{% endif %}
++                {% if litter.notes %}<span class="muted">{{ litter.notes }}</span>{% endif %}
++              </li>
++            {% endfor %}
++          {% else %}
++            <li class="empty">Aucune portée enregistrée pour l'instant.</li>
++          {% endif %}
++        </ul>
++        <form id="litter-form" class="form">
++          <h3>Planifier une portée</h3>
++          <div class="form-grid">
++            <label>Nom de portée
++              <input type="text" name="name" required />
++            </label>
++            <label>ID de la femelle (queen)
++              <input type="number" name="queen_id" min="1" required />
++            </label>
++            <label>ID du mâle (sire)
++              <input type="number" name="sire_id" min="1" required />
++            </label>
++            <label>Date de saillie
++              <input type="date" name="mating_date" />
++            </label>
++            <label>Date de naissance
++              <input type="date" name="birth_date" />
++            </label>
++            <label>Notes
++              <textarea name="notes" rows="2"></textarea>
++            </label>
++          </div>
++          <button type="submit">Créer</button>
++          <p class="helper">Utilisez les identifiants des chats ci-dessus pour lier la portée.</p>
++        </form>
++      </section>
++
++      <section class="panel">
++        <div class="panel-header">
++          <h2>Familles en attente</h2>
++          <button type="button" class="refresh" data-target="leads">Actualiser</button>
++        </div>
++        <ul id="leads-list" class="list">
++          {% if leads %}
++            {% for lead in leads %}
++              <li>
++                <strong>{{ lead.first_name }} {{ lead.last_name }}</strong>
++                {% if lead.email %}<span class="muted">{{ lead.email }}</span>{% endif %}
++                {% if lead.phone %}<span class="muted">{{ lead.phone }}</span>{% endif %}
++                {% if lead.status %}<span class="badge badge-soft">{{ lead.status }}</span>{% endif %}
++                {% if lead.preferred_color or lead.preferred_gender %}
++                  <span class="muted">Préférences : {{ lead.preferred_color or '—' }} / {{ lead.preferred_gender or '—' }}</span>
++                {% endif %}
++                {% if lead.notes %}<span class="muted">{{ lead.notes }}</span>{% endif %}
++              </li>
++            {% endfor %}
++          {% else %}
++            <li class="empty">Aucun lead enregistré pour l'instant.</li>
++          {% endif %}
++        </ul>
++        <form id="lead-form" class="form">
++          <h3>Ajouter une famille</h3>
++          <div class="form-grid">
++            <label>Prénom
++              <input type="text" name="first_name" required />
++            </label>
++            <label>Nom
++              <input type="text" name="last_name" required />
++            </label>
++            <label>Email
++              <input type="email" name="email" />
++            </label>
++            <label>Téléphone
++              <input type="tel" name="phone" />
++            </label>
++            <label>Préférence couleur
++              <input type="text" name="preferred_color" />
++            </label>
++            <label>Préférence sexe
++              <select name="preferred_gender">
++                <option value="">--</option>
++                <option value="male">Mâle</option>
++                <option value="female">Femelle</option>
++                <option value="indifferent">Peu importe</option>
++              </select>
++            </label>
++            <label>Notes
++              <textarea name="notes" rows="2"></textarea>
++            </label>
++          </div>
++          <button type="submit">Ajouter à la liste d'attente</button>
++          <p class="helper">Collectez rapidement les informations essentielles d'une famille intéressée.</p>
++        </form>
++      </section>
++    </main>
++    <footer class="app-footer">
++      <p>Application locale — vos données restent sur votre machine. Synchronisez ensuite votre dossier <code>data/</code> avec votre service préféré.</p>
++    </footer>
++  </body>
++</html>
+diff --git a/backend/requirements.txt b/backend/requirements.txt
+new file mode 100644
+index 0000000..c0e34d3
+--- /dev/null
++++ b/backend/requirements.txt
+@@ -0,0 +1,6 @@
++fastapi==0.110.0
++uvicorn[standard]==0.27.1
++sqlmodel==0.0.14
++python-multipart==0.0.9
++pydantic[email]==1.10.14
++jinja2==3.1.3
