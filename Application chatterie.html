@@ -35,28 +35,28 @@
             
             <div class="p-4">
                 <ul class="space-y-2">
-                    <li><button onclick="showSection('dashboard')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
+                    <li><button onclick="showSection('dashboard', this)" data-section="dashboard" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
                         <span>📊</span><span>Tableau de bord</span>
                     </button></li>
-                    <li><button onclick="showSection('cats')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
+                    <li><button onclick="showSection('cats', this)" data-section="cats" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
                         <span>🐱</span><span>Profils & Base de données</span>
                     </button></li>
-                    <li><button onclick="showSection('breeding')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
+                    <li><button onclick="showSection('breeding', this)" data-section="breeding" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
                         <span>💕</span><span>Reproduction & Portées</span>
                     </button></li>
-                    <li><button onclick="showSection('adoption')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
+                    <li><button onclick="showSection('adoption', this)" data-section="adoption" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
                         <span>🏠</span><span>CRM Adoption</span>
                     </button></li>
-                    <li><button onclick="showSection('health')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
+                    <li><button onclick="showSection('health', this)" data-section="health" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
                         <span>🏥</span><span>Santé & Vétérinaire</span>
                     </button></li>
-                    <li><button onclick="showSection('inventory')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
+                    <li><button onclick="showSection('inventory', this)" data-section="inventory" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
                         <span>📦</span><span>Stocks & Logistique</span>
                     </button></li>
-                    <li><button onclick="showSection('finances')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
+                    <li><button onclick="showSection('finances', this)" data-section="finances" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
                         <span>💰</span><span>Finances & Analytique</span>
                     </button></li>
-                    <li><button onclick="showSection('website')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
+                    <li><button onclick="showSection('website', this)" data-section="website" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
                         <span>🌐</span><span>Site Public</span>
                     </button></li>
                 </ul>
@@ -280,13 +280,13 @@
                 <div class="bg-white rounded-xl shadow-md mb-6">
                     <div class="border-b border-gray-200">
                         <nav class="flex space-x-8 px-6">
-                            <button onclick="showBreedingTab('heat')" class="breeding-tab py-4 px-2 border-b-2 border-purple-500 text-purple-600 font-medium">
+                            <button onclick="showBreedingTab('heat', this)" data-breeding-tab="heat" class="breeding-tab py-4 px-2 border-b-2 border-purple-500 text-purple-600 font-medium">
                                 Chaleurs & Saillies
                             </button>
-                            <button onclick="showBreedingTab('gestation')" class="breeding-tab py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                            <button onclick="showBreedingTab('gestation', this)" data-breeding-tab="gestation" class="breeding-tab py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
                                 Gestation
                             </button>
-                            <button onclick="showBreedingTab('litters')" class="breeding-tab py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                            <button onclick="showBreedingTab('litters', this)" data-breeding-tab="litters" class="breeding-tab py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
                                 Portées
                             </button>
                         </nav>
@@ -817,19 +817,19 @@
                     <!-- Category Tabs -->
                     <div class="border-b border-gray-200 mb-6">
                         <nav class="flex space-x-8">
-                            <button onclick="showInventoryCategory('all')" class="inventory-tab py-2 px-1 border-b-2 border-purple-500 text-purple-600 font-medium text-sm">
+                            <button onclick="showInventoryCategory('all', this)" data-inventory-category="all" class="inventory-tab py-2 px-1 border-b-2 border-purple-500 text-purple-600 font-medium text-sm">
                                 Tous
                             </button>
-                            <button onclick="showInventoryCategory('food')" class="inventory-tab py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-sm">
+                            <button onclick="showInventoryCategory('food', this)" data-inventory-category="food" class="inventory-tab py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-sm">
                                 Alimentation
                             </button>
-                            <button onclick="showInventoryCategory('litter')" class="inventory-tab py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-sm">
+                            <button onclick="showInventoryCategory('litter', this)" data-inventory-category="litter" class="inventory-tab py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-sm">
                                 Litière
                             </button>
-                            <button onclick="showInventoryCategory('care')" class="inventory-tab py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-sm">
+                            <button onclick="showInventoryCategory('care', this)" data-inventory-category="care" class="inventory-tab py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-sm">
                                 Soins
                             </button>
-                            <button onclick="showInventoryCategory('toys')" class="inventory-tab py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-sm">
+                            <button onclick="showInventoryCategory('toys', this)" data-inventory-category="toys" class="inventory-tab py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-sm">
                                 Jouets
                             </button>
                         </nav>
@@ -1275,61 +1275,81 @@
         let currentInventoryCategory = 'all';
 
         // Navigation
-        function showSection(sectionName) {
+        function showSection(sectionName, buttonElement = null) {
+            const targetSection = document.getElementById(sectionName);
+            if (!targetSection) {
+                return;
+            }
+
             // Hide all sections
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.add('hidden');
+                section.classList.remove('fade-in');
             });
-            
+
             // Show selected section
-            document.getElementById(sectionName).classList.remove('hidden');
-            document.getElementById(sectionName).classList.add('fade-in');
-            
+            targetSection.classList.remove('hidden');
+            targetSection.classList.add('fade-in');
+
             // Update navigation
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('bg-purple-100', 'text-purple-800');
                 btn.classList.add('text-gray-700');
             });
-            
-            event.target.classList.add('bg-purple-100', 'text-purple-800');
-            event.target.classList.remove('text-gray-700');
-            
+
+            const activeButton = buttonElement || document.querySelector(`.nav-btn[data-section="${sectionName}"]`);
+            if (activeButton) {
+                activeButton.classList.add('bg-purple-100', 'text-purple-800');
+                activeButton.classList.remove('text-gray-700');
+            }
+
             currentSection = sectionName;
         }
 
         // Breeding tabs
-        function showBreedingTab(tabName) {
+        function showBreedingTab(tabName, buttonElement = null) {
+            const tabContent = document.getElementById(`${tabName}Tab`);
+            if (!tabContent) {
+                return;
+            }
+
             // Hide all breeding content
             document.querySelectorAll('.breeding-content').forEach(content => {
                 content.classList.add('hidden');
             });
-            
+
             // Show selected tab content
-            document.getElementById(tabName + 'Tab').classList.remove('hidden');
-            
+            tabContent.classList.remove('hidden');
+
             // Update tab styling
             document.querySelectorAll('.breeding-tab').forEach(tab => {
                 tab.classList.remove('border-purple-500', 'text-purple-600');
                 tab.classList.add('border-transparent', 'text-gray-500');
             });
-            
-            event.target.classList.add('border-purple-500', 'text-purple-600');
-            event.target.classList.remove('border-transparent', 'text-gray-500');
-            
+
+            const activeTab = buttonElement || document.querySelector(`.breeding-tab[data-breeding-tab="${tabName}"]`);
+            if (activeTab) {
+                activeTab.classList.add('border-purple-500', 'text-purple-600');
+                activeTab.classList.remove('border-transparent', 'text-gray-500');
+            }
+
             currentBreedingTab = tabName;
         }
 
         // Inventory categories
-        function showInventoryCategory(category) {
+        function showInventoryCategory(category, buttonElement = null) {
             // Update tab styling
             document.querySelectorAll('.inventory-tab').forEach(tab => {
                 tab.classList.remove('border-purple-500', 'text-purple-600');
                 tab.classList.add('border-transparent', 'text-gray-500');
             });
-            
-            event.target.classList.add('border-purple-500', 'text-purple-600');
-            event.target.classList.remove('border-transparent', 'text-gray-500');
-            
+
+            const activeTab = buttonElement || document.querySelector(`.inventory-tab[data-inventory-category="${category}"]`);
+            if (activeTab) {
+                activeTab.classList.add('border-purple-500', 'text-purple-600');
+                activeTab.classList.remove('border-transparent', 'text-gray-500');
+            }
+
             currentInventoryCategory = category;
             // Here you would filter the inventory table based on category
         }
@@ -1867,28 +1887,22 @@
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
-            // Set initial active navigation
-            const dashboardBtn = document.querySelector('button[onclick="showSection(\'dashboard\')"]');
+            // Initialize default selections
+            const dashboardBtn = document.querySelector('.nav-btn[data-section="dashboard"]');
             if (dashboardBtn) {
-                dashboardBtn.classList.add('bg-purple-100', 'text-purple-800');
-                dashboardBtn.classList.remove('text-gray-700');
+                showSection('dashboard', dashboardBtn);
             }
-            
-            // Add click handlers for navigation
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    // Remove active class from all buttons
-                    document.querySelectorAll('.nav-btn').forEach(b => {
-                        b.classList.remove('bg-purple-100', 'text-purple-800');
-                        b.classList.add('text-gray-700');
-                    });
-                    
-                    // Add active class to clicked button
-                    this.classList.add('bg-purple-100', 'text-purple-800');
-                    this.classList.remove('text-gray-700');
-                });
-            });
-            
+
+            const defaultBreedingTab = document.querySelector('.breeding-tab[data-breeding-tab="heat"]');
+            if (defaultBreedingTab) {
+                showBreedingTab('heat', defaultBreedingTab);
+            }
+
+            const defaultInventoryTab = document.querySelector('.inventory-tab[data-inventory-category="all"]');
+            if (defaultInventoryTab) {
+                showInventoryCategory('all', defaultInventoryTab);
+            }
+
             // Close modal when clicking outside
             document.getElementById('modalOverlay').addEventListener('click', function(e) {
                 if (e.target === this) {
@@ -1903,4 +1917,6 @@
                 }
             });
         });
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'991009cb90f5b756',t:'MTc2MDg3NDQyMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+    </script>
+</body>
+</html>
