@@ -35,28 +35,28 @@
             
             <div class="p-4">
                 <ul class="space-y-2">
-                    <li><button onclick="showSection('dashboard', this)" data-section="dashboard" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
+                    <li><button type="button" data-section="dashboard" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3 text-gray-700">
                         <span>📊</span><span>Tableau de bord</span>
                     </button></li>
-                    <li><button onclick="showSection('cats', this)" data-section="cats" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
+                    <li><button type="button" data-section="cats" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3 text-gray-700">
                         <span>🐱</span><span>Profils & Base de données</span>
                     </button></li>
-                    <li><button onclick="showSection('breeding', this)" data-section="breeding" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
+                    <li><button type="button" data-section="breeding" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3 text-gray-700">
                         <span>💕</span><span>Reproduction & Portées</span>
                     </button></li>
-                    <li><button onclick="showSection('adoption', this)" data-section="adoption" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
+                    <li><button type="button" data-section="adoption" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3 text-gray-700">
                         <span>🏠</span><span>CRM Adoption</span>
                     </button></li>
-                    <li><button onclick="showSection('health', this)" data-section="health" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
+                    <li><button type="button" data-section="health" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3 text-gray-700">
                         <span>🏥</span><span>Santé & Vétérinaire</span>
                     </button></li>
-                    <li><button onclick="showSection('inventory', this)" data-section="inventory" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
+                    <li><button type="button" data-section="inventory" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3 text-gray-700">
                         <span>📦</span><span>Stocks & Logistique</span>
                     </button></li>
-                    <li><button onclick="showSection('finances', this)" data-section="finances" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
+                    <li><button type="button" data-section="finances" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3 text-gray-700">
                         <span>💰</span><span>Finances & Analytique</span>
                     </button></li>
-                    <li><button onclick="showSection('website', this)" data-section="website" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3">
+                    <li><button type="button" data-section="website" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3 text-gray-700">
                         <span>🌐</span><span>Site Public</span>
                     </button></li>
                 </ul>
@@ -1276,6 +1276,9 @@
 
         // Navigation
         function showSection(sectionName, buttonElement = null) {
+            if (buttonElement && !buttonElement.classList.contains('nav-btn')) {
+                buttonElement = buttonElement.closest('.nav-btn');
+            }
             const targetSection = document.getElementById(sectionName);
             if (!targetSection) {
                 return;
@@ -1295,15 +1298,30 @@
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('bg-purple-100', 'text-purple-800');
                 btn.classList.add('text-gray-700');
+                btn.removeAttribute('aria-current');
             });
 
             const activeButton = buttonElement || document.querySelector(`.nav-btn[data-section="${sectionName}"]`);
             if (activeButton) {
                 activeButton.classList.add('bg-purple-100', 'text-purple-800');
                 activeButton.classList.remove('text-gray-700');
+                activeButton.setAttribute('aria-current', 'page');
             }
 
             currentSection = sectionName;
+        }
+
+        function initializeNavigation() {
+            document.querySelectorAll('.nav-btn').forEach(button => {
+                const section = button.dataset.section;
+                if (!section) {
+                    return;
+                }
+
+                button.addEventListener('click', () => {
+                    showSection(section, button);
+                });
+            });
         }
 
         // Breeding tabs
@@ -1885,12 +1903,12 @@
             }, 3000);
         }
 
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize default selections
-            const dashboardBtn = document.querySelector('.nav-btn[data-section="dashboard"]');
-            if (dashboardBtn) {
-                showSection('dashboard', dashboardBtn);
+        function initializeApp() {
+            initializeNavigation();
+
+            const defaultNavButton = document.querySelector('.nav-btn[data-section="dashboard"]');
+            if (defaultNavButton && defaultNavButton.dataset.section) {
+                showSection(defaultNavButton.dataset.section, defaultNavButton);
             }
 
             const defaultBreedingTab = document.querySelector('.breeding-tab[data-breeding-tab="heat"]');
@@ -1904,19 +1922,28 @@
             }
 
             // Close modal when clicking outside
-            document.getElementById('modalOverlay').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeModal();
-                }
-            });
-            
+            const modalOverlay = document.getElementById('modalOverlay');
+            if (modalOverlay) {
+                modalOverlay.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeModal();
+                    }
+                });
+            }
+
             // Add keyboard navigation
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
                     closeModal();
                 }
             });
-        });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
     </script>
 </body>
 </html>
