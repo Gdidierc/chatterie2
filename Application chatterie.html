@@ -1,1949 +1,1971 @@
-<!DOCTYPE html>
-<html lang="fr" class="h-full">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CatBreeder Pro - Gestion d'Élevage Félin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            box-sizing: border-box;
-        }
-        .fade-in {
-            animation: fadeIn 0.3s ease-in;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .chart-bar {
-            transition: all 0.3s ease;
-        }
-        .chart-bar:hover {
-            transform: scaleY(1.1);
-        }
-    </style>
-</head>
-<body class="h-full bg-gradient-to-br from-purple-50 to-blue-50 font-sans">
-    <div class="flex h-full">
-        <!-- Sidebar -->
-        <nav class="w-64 bg-white shadow-lg border-r border-gray-200">
-            <div class="p-6 border-b border-gray-200">
-                <h1 class="text-2xl font-bold text-purple-800">🐱 CatBreeder Pro</h1>
-                <p class="text-sm text-gray-600 mt-1">Gestion d'élevage félin</p>
-            </div>
-            
-            <div class="p-4">
-                <ul class="space-y-2">
-                    <li><button type="button" data-section="dashboard" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3 text-gray-700">
-                        <span>📊</span><span>Tableau de bord</span>
-                    </button></li>
-                    <li><button type="button" data-section="cats" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3 text-gray-700">
-                        <span>🐱</span><span>Profils & Base de données</span>
-                    </button></li>
-                    <li><button type="button" data-section="breeding" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3 text-gray-700">
-                        <span>💕</span><span>Reproduction & Portées</span>
-                    </button></li>
-                    <li><button type="button" data-section="adoption" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3 text-gray-700">
-                        <span>🏠</span><span>CRM Adoption</span>
-                    </button></li>
-                    <li><button type="button" data-section="health" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3 text-gray-700">
-                        <span>🏥</span><span>Santé & Vétérinaire</span>
-                    </button></li>
-                    <li><button type="button" data-section="inventory" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3 text-gray-700">
-                        <span>📦</span><span>Stocks & Logistique</span>
-                    </button></li>
-                    <li><button type="button" data-section="finances" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3 text-gray-700">
-                        <span>💰</span><span>Finances & Analytique</span>
-                    </button></li>
-                    <li><button type="button" data-section="website" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center space-x-3 text-gray-700">
-                        <span>🌐</span><span>Site Public</span>
-                    </button></li>
-                </ul>
-            </div>
-        </nav>
-
-        <!-- Main Content -->
-        <main class="flex-1 overflow-auto">
-            <!-- Dashboard Section -->
-            <div id="dashboard" class="section p-8">
-                <div class="mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Tableau de bord</h2>
-                    <p class="text-gray-600">Vue d'ensemble de votre élevage</p>
-                </div>
-
-                <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Chats Total</p>
-                                <p class="text-2xl font-bold text-gray-900" id="totalCats">12</p>
-                            </div>
-                            <div class="text-purple-500 text-3xl">🐱</div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-pink-500">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Portées Actives</p>
-                                <p class="text-2xl font-bold text-gray-900" id="activeLitters">3</p>
-                            </div>
-                            <div class="text-pink-500 text-3xl">🍼</div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Chatons Disponibles</p>
-                                <p class="text-2xl font-bold text-gray-900" id="availableKittens">8</p>
-                            </div>
-                            <div class="text-green-500 text-3xl">✨</div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Revenus ce mois</p>
-                                <p class="text-2xl font-bold text-gray-900">€2,450</p>
-                            </div>
-                            <div class="text-blue-500 text-3xl">💰</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Charts and Recent Activity -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- Revenue Chart -->
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Revenus par mois</h3>
-                        <div class="h-64 flex items-end justify-between space-x-2">
-                            <div class="chart-bar bg-purple-200 w-8 rounded-t" style="height: 40%"></div>
-                            <div class="chart-bar bg-purple-300 w-8 rounded-t" style="height: 60%"></div>
-                            <div class="chart-bar bg-purple-400 w-8 rounded-t" style="height: 80%"></div>
-                            <div class="chart-bar bg-purple-500 w-8 rounded-t" style="height: 100%"></div>
-                            <div class="chart-bar bg-purple-600 w-8 rounded-t" style="height: 70%"></div>
-                            <div class="chart-bar bg-purple-700 w-8 rounded-t" style="height: 90%"></div>
-                        </div>
-                        <div class="flex justify-between text-xs text-gray-500 mt-2">
-                            <span>Jan</span><span>Fév</span><span>Mar</span><span>Avr</span><span>Mai</span><span>Jun</span>
-                        </div>
-                    </div>
-
-                    <!-- Recent Activity -->
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Activité récente</h3>
-                        <div class="space-y-4">
-                            <div class="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
-                                <div class="text-green-500">✅</div>
-                                <div>
-                                    <p class="text-sm font-medium">Chaton adopté</p>
-                                    <p class="text-xs text-gray-500">Luna - Famille Dubois</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
-                                <div class="text-blue-500">💉</div>
-                                <div>
-                                    <p class="text-sm font-medium">Vaccination programmée</p>
-                                    <p class="text-xs text-gray-500">Milo - Demain 14h</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center space-x-3 p-3 bg-purple-50 rounded-lg">
-                                <div class="text-purple-500">🍼</div>
-                                <div>
-                                    <p class="text-sm font-medium">Nouvelle portée</p>
-                                    <p class="text-xs text-gray-500">Bella - 4 chatons</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Cats Section -->
-            <div id="cats" class="section hidden p-8">
-                <div class="mb-8 flex justify-between items-center">
-                    <div>
-                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Profils & Base de données Chats</h2>
-                        <p class="text-gray-600">Gestion complète de vos chats et leur généalogie</p>
-                    </div>
-                    <button onclick="showAddCatModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
-                        + Ajouter un chat
-                    </button>
-                </div>
-
-                <!-- Filters -->
-                <div class="bg-white rounded-xl shadow-md p-6 mb-6">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div>
-                            <label for="statusFilter" class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
-                            <select id="statusFilter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option value="">Tous</option>
-                                <option value="reproducteur">Reproducteur</option>
-                                <option value="retraite">Retraité</option>
-                                <option value="chaton">Chaton</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="sexFilter" class="block text-sm font-medium text-gray-700 mb-2">Sexe</label>
-                            <select id="sexFilter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option value="">Tous</option>
-                                <option value="male">Mâle</option>
-                                <option value="femelle">Femelle</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="colorFilter" class="block text-sm font-medium text-gray-700 mb-2">Couleur</label>
-                            <select id="colorFilter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option value="">Toutes</option>
-                                <option value="seal">Seal Point</option>
-                                <option value="blue">Blue Point</option>
-                                <option value="chocolate">Chocolate Point</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="searchCat" class="block text-sm font-medium text-gray-700 mb-2">Recherche</label>
-                            <input type="text" id="searchCat" placeholder="Nom, pedigree..." class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Cats Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="catsGrid">
-                    <!-- Cat Card Template -->
-                    <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                        <div class="h-48 bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center">
-                            <span class="text-6xl">🐱</span>
-                        </div>
-                        <div class="p-6">
-                            <div class="flex justify-between items-start mb-3">
-                                <h3 class="text-lg font-semibold text-gray-800">Luna de Beaumont</h3>
-                                <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">Reproducteur</span>
-                            </div>
-                            <div class="space-y-2 text-sm text-gray-600">
-                                <p><span class="font-medium">Sexe:</span> Femelle</p>
-                                <p><span class="font-medium">Naissance:</span> 15/03/2021</p>
-                                <p><span class="font-medium">Couleur:</span> Seal Point</p>
-                                <p><span class="font-medium">Puce:</span> 250268500123456</p>
-                            </div>
-                            <div class="mt-4 flex space-x-2">
-                                <button onclick="viewCatDetails('luna')" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
-                                    Voir détails
-                                </button>
-                                <button onclick="editCat('luna')" class="bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium transition-colors">
-                                    ✏️
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- More cat cards would be generated here -->
-                    <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                        <div class="h-48 bg-gradient-to-br from-blue-200 to-purple-200 flex items-center justify-center">
-                            <span class="text-6xl">🐱</span>
-                        </div>
-                        <div class="p-6">
-                            <div class="flex justify-between items-start mb-3">
-                                <h3 class="text-lg font-semibold text-gray-800">Milo Royal Star</h3>
-                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Reproducteur</span>
-                            </div>
-                            <div class="space-y-2 text-sm text-gray-600">
-                                <p><span class="font-medium">Sexe:</span> Mâle</p>
-                                <p><span class="font-medium">Naissance:</span> 08/01/2020</p>
-                                <p><span class="font-medium">Couleur:</span> Blue Point</p>
-                                <p><span class="font-medium">Puce:</span> 250268500789012</p>
-                            </div>
-                            <div class="mt-4 flex space-x-2">
-                                <button onclick="viewCatDetails('milo')" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
-                                    Voir détails
-                                </button>
-                                <button onclick="editCat('milo')" class="bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium transition-colors">
-                                    ✏️
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Breeding Section -->
-            <div id="breeding" class="section hidden p-8">
-                <div class="mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Reproduction & Portées</h2>
-                    <p class="text-gray-600">Gestion des chaleurs, saillies et portées</p>
-                </div>
-
-                <!-- Breeding Tabs -->
-                <div class="bg-white rounded-xl shadow-md mb-6">
-                    <div class="border-b border-gray-200">
-                        <nav class="flex space-x-8 px-6">
-                            <button onclick="showBreedingTab('heat', this)" data-breeding-tab="heat" class="breeding-tab py-4 px-2 border-b-2 border-purple-500 text-purple-600 font-medium">
-                                Chaleurs & Saillies
-                            </button>
-                            <button onclick="showBreedingTab('gestation', this)" data-breeding-tab="gestation" class="breeding-tab py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
-                                Gestation
-                            </button>
-                            <button onclick="showBreedingTab('litters', this)" data-breeding-tab="litters" class="breeding-tab py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
-                                Portées
-                            </button>
-                        </nav>
-                    </div>
-
-                    <!-- Heat Cycles Tab -->
-                    <div id="heatTab" class="breeding-content p-6">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-lg font-semibold text-gray-800">Journal des chaleurs</h3>
-                            <button onclick="addHeatCycle()" class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                                + Nouvelle chaleur
-                            </button>
-                        </div>
-
-                        <div class="overflow-x-auto">
-                            <table class="w-full">
-                                <thead>
-                                    <tr class="border-b border-gray-200">
-                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Chat</th>
-                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Date début</th>
-                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Intensité</th>
-                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Saillie</th>
-                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Statut</th>
-                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr class="border-b border-gray-100 hover:bg-gray-50">
-                                        <td class="py-3 px-4">Luna de Beaumont</td>
-                                        <td class="py-3 px-4">12/06/2024</td>
-                                        <td class="py-3 px-4">
-                                            <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">Forte</span>
-                                        </td>
-                                        <td class="py-3 px-4">15/06/2024 - Milo</td>
-                                        <td class="py-3 px-4">
-                                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Confirmée</span>
-                                        </td>
-                                        <td class="py-3 px-4">
-                                            <button class="text-purple-600 hover:text-purple-800 text-sm">Voir</button>
-                                        </td>
-                                    </tr>
-                                    <tr class="border-b border-gray-100 hover:bg-gray-50">
-                                        <td class="py-3 px-4">Bella Princess</td>
-                                        <td class="py-3 px-4">08/06/2024</td>
-                                        <td class="py-3 px-4">
-                                            <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">Modérée</span>
-                                        </td>
-                                        <td class="py-3 px-4">-</td>
-                                        <td class="py-3 px-4">
-                                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">En cours</span>
-                                        </td>
-                                        <td class="py-3 px-4">
-                                            <button class="text-purple-600 hover:text-purple-800 text-sm">Voir</button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Gestation Tab -->
-                    <div id="gestationTab" class="breeding-content hidden p-6">
-                        <div class="space-y-6">
-                            <div class="bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg p-6">
-                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Gestations en cours</h3>
-                                
-                                <div class="bg-white rounded-lg p-4 mb-4">
-                                    <div class="flex justify-between items-center mb-3">
-                                        <h4 class="font-medium text-gray-800">Luna de Beaumont</h4>
-                                        <span class="text-sm text-gray-600">J+42 / 65</span>
-                                    </div>
-                                    
-                                    <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
-                                        <div class="bg-purple-600 h-2 rounded-full" style="width: 65%"></div>
-                                    </div>
-                                    
-                                    <div class="grid grid-cols-2 gap-4 text-sm">
-                                        <div>
-                                            <p class="text-gray-600">Saillie: 15/06/2024</p>
-                                            <p class="text-gray-600">Mise-bas prévue: 19/08/2024</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-gray-600">Prochaine échographie: 25/07/2024</p>
-                                            <p class="text-gray-600">Radiographie: 15/08/2024</p>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mt-4 flex space-x-2">
-                                        <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                                            Voir timeline
-                                        </button>
-                                        <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                                            Ajouter note
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Litters Tab -->
-                    <div id="littersTab" class="breeding-content hidden p-6">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-lg font-semibold text-gray-800">Portées</h3>
-                            <button onclick="addLitter()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                                + Nouvelle portée
-                            </button>
-                        </div>
-
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div class="bg-white border border-gray-200 rounded-lg p-6">
-                                <div class="flex justify-between items-center mb-4">
-                                    <h4 class="font-semibold text-gray-800">Portée Luna x Milo</h4>
-                                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Active</span>
-                                </div>
-                                
-                                <div class="space-y-2 text-sm text-gray-600 mb-4">
-                                    <p><span class="font-medium">Naissance:</span> 19/08/2024</p>
-                                    <p><span class="font-medium">Âge:</span> 3 semaines</p>
-                                    <p><span class="font-medium">Chatons:</span> 4 (2♂, 2♀)</p>
-                                </div>
-                                
-                                <div class="space-y-2 mb-4">
-                                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
-                                        <span class="text-sm">Chaton 1 (♂) - Seal Point</span>
-                                        <span class="text-xs text-green-600">Disponible</span>
-                                    </div>
-                                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
-                                        <span class="text-sm">Chaton 2 (♀) - Blue Point</span>
-                                        <span class="text-xs text-orange-600">Réservé</span>
-                                    </div>
-                                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
-                                        <span class="text-sm">Chaton 3 (♂) - Seal Point</span>
-                                        <span class="text-xs text-purple-600">Keep</span>
-                                    </div>
-                                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
-                                        <span class="text-sm">Chaton 4 (♀) - Chocolate Point</span>
-                                        <span class="text-xs text-green-600">Disponible</span>
-                                    </div>
-                                </div>
-                                
-                                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
-                                    Gérer la portée
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Adoption Section -->
-            <div id="adoption" class="section hidden p-8">
-                <div class="mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-2">CRM Adoption</h2>
-                    <p class="text-gray-600">Gestion des familles et processus d'adoption</p>
-                </div>
-
-                <!-- Adoption Stats -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Candidatures</p>
-                                <p class="text-2xl font-bold text-gray-900">23</p>
-                            </div>
-                            <div class="text-blue-500 text-2xl">📋</div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Liste d'attente</p>
-                                <p class="text-2xl font-bold text-gray-900">15</p>
-                            </div>
-                            <div class="text-orange-500 text-2xl">⏳</div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Réservations</p>
-                                <p class="text-2xl font-bold text-gray-900">6</p>
-                            </div>
-                            <div class="text-green-500 text-2xl">✅</div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Adoptions ce mois</p>
-                                <p class="text-2xl font-bold text-gray-900">4</p>
-                            </div>
-                            <div class="text-purple-500 text-2xl">🏠</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Families Management -->
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-lg font-semibold text-gray-800">Familles candidates</h3>
-                        <div class="flex space-x-3">
-                            <button onclick="exportFamilies()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors">
-                                📊 Exporter
-                            </button>
-                            <button onclick="addFamily()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                                + Nouvelle famille
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Filters -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                        <select class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                            <option>Tous les statuts</option>
-                            <option>Candidature</option>
-                            <option>Qualifié</option>
-                            <option>Liste d'attente</option>
-                            <option>Réservé</option>
-                        </select>
-                        <select class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                            <option>Toutes préférences</option>
-                            <option>Mâle</option>
-                            <option>Femelle</option>
-                            <option>Pas de préférence</option>
-                        </select>
-                        <select class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                            <option>Toutes couleurs</option>
-                            <option>Seal Point</option>
-                            <option>Blue Point</option>
-                            <option>Chocolate Point</option>
-                        </select>
-                        <input type="text" placeholder="Rechercher famille..." class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                    </div>
-
-                    <!-- Families Table -->
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="border-b border-gray-200">
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Famille</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Contact</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Préférences</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Score</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Statut</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="border-b border-gray-100 hover:bg-gray-50">
-                                    <td class="py-3 px-4">
-                                        <div>
-                                            <p class="font-medium text-gray-800">Famille Dubois</p>
-                                            <p class="text-sm text-gray-600">Marie & Pierre</p>
-                                        </div>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <div>
-                                            <p class="text-sm">marie.dubois@email.com</p>
-                                            <p class="text-sm text-gray-600">+32 123 456 789</p>
-                                        </div>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <div class="text-sm">
-                                            <p>♀ Femelle</p>
-                                            <p class="text-gray-600">Seal/Blue Point</p>
-                                        </div>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <div class="flex items-center">
-                                            <div class="w-12 bg-gray-200 rounded-full h-2 mr-2">
-                                                <div class="bg-green-500 h-2 rounded-full" style="width: 85%"></div>
-                                            </div>
-                                            <span class="text-sm text-green-600">85%</span>
-                                        </div>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Qualifié</span>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <div class="flex space-x-2">
-                                            <button class="text-purple-600 hover:text-purple-800 text-sm">Voir</button>
-                                            <button class="text-blue-600 hover:text-blue-800 text-sm">Match</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr class="border-b border-gray-100 hover:bg-gray-50">
-                                    <td class="py-3 px-4">
-                                        <div>
-                                            <p class="font-medium text-gray-800">Famille Martin</p>
-                                            <p class="text-sm text-gray-600">Sophie & Jean</p>
-                                        </div>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <div>
-                                            <p class="text-sm">sophie.martin@email.com</p>
-                                            <p class="text-sm text-gray-600">+32 987 654 321</p>
-                                        </div>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <div class="text-sm">
-                                            <p>♂ Mâle</p>
-                                            <p class="text-gray-600">Toutes couleurs</p>
-                                        </div>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <div class="flex items-center">
-                                            <div class="w-12 bg-gray-200 rounded-full h-2 mr-2">
-                                                <div class="bg-yellow-500 h-2 rounded-full" style="width: 70%"></div>
-                                            </div>
-                                            <span class="text-sm text-yellow-600">70%</span>
-                                        </div>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Liste d'attente</span>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <div class="flex space-x-2">
-                                            <button class="text-purple-600 hover:text-purple-800 text-sm">Voir</button>
-                                            <button class="text-blue-600 hover:text-blue-800 text-sm">Match</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Health Section -->
-            <div id="health" class="section hidden p-8">
-                <div class="mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Santé & Vétérinaire</h2>
-                    <p class="text-gray-600">Suivi médical et conformité réglementaire</p>
-                </div>
-
-                <!-- Health Calendar -->
-                <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Calendrier des soins</h3>
-                    
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <!-- Upcoming Appointments -->
-                        <div>
-                            <h4 class="font-medium text-gray-700 mb-3">Rendez-vous à venir</h4>
-                            <div class="space-y-3">
-                                <div class="flex items-center p-3 bg-red-50 border-l-4 border-red-400 rounded">
-                                    <div class="text-red-500 mr-3">💉</div>
-                                    <div class="flex-1">
-                                        <p class="text-sm font-medium">Vaccination - Milo</p>
-                                        <p class="text-xs text-gray-600">Demain 14h00 - Dr. Veterinaire</p>
-                                    </div>
-                                    <button class="text-red-600 hover:text-red-800 text-sm">Voir</button>
-                                </div>
-                                
-                                <div class="flex items-center p-3 bg-blue-50 border-l-4 border-blue-400 rounded">
-                                    <div class="text-blue-500 mr-3">🔍</div>
-                                    <div class="flex-1">
-                                        <p class="text-sm font-medium">Échographie - Luna</p>
-                                        <p class="text-xs text-gray-600">25/07/2024 10h30 - Dr. Veterinaire</p>
-                                    </div>
-                                    <button class="text-blue-600 hover:text-blue-800 text-sm">Voir</button>
-                                </div>
-                                
-                                <div class="flex items-center p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded">
-                                    <div class="text-yellow-500 mr-3">💊</div>
-                                    <div class="flex-1">
-                                        <p class="text-sm font-medium">Vermifuge - Portée Luna</p>
-                                        <p class="text-xs text-gray-600">30/07/2024 - À domicile</p>
-                                    </div>
-                                    <button class="text-yellow-600 hover:text-yellow-800 text-sm">Voir</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Health Stats -->
-                        <div>
-                            <h4 class="font-medium text-gray-700 mb-3">Statut santé</h4>
-                            <div class="space-y-4">
-                                <div class="flex justify-between items-center p-3 bg-green-50 rounded">
-                                    <span class="text-sm font-medium">Vaccinations à jour</span>
-                                    <span class="text-green-600 font-bold">10/12</span>
-                                </div>
-                                
-                                <div class="flex justify-between items-center p-3 bg-blue-50 rounded">
-                                    <span class="text-sm font-medium">Tests génétiques</span>
-                                    <span class="text-blue-600 font-bold">8/12</span>
-                                </div>
-                                
-                                <div class="flex justify-between items-center p-3 bg-purple-50 rounded">
-                                    <span class="text-sm font-medium">Puçage complet</span>
-                                    <span class="text-purple-600 font-bold">12/12</span>
-                                </div>
-                                
-                                <div class="flex justify-between items-center p-3 bg-orange-50 rounded">
-                                    <span class="text-sm font-medium">Conformité UE</span>
-                                    <span class="text-orange-600 font-bold">11/12</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Health Records -->
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-lg font-semibold text-gray-800">Dossiers médicaux</h3>
-                        <button onclick="addHealthRecord()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                            + Nouveau dossier
-                        </button>
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="border-b border-gray-200">
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Chat</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Type</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Date</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Vétérinaire</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Statut</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="border-b border-gray-100 hover:bg-gray-50">
-                                    <td class="py-3 px-4">Luna de Beaumont</td>
-                                    <td class="py-3 px-4">
-                                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Vaccination</span>
-                                    </td>
-                                    <td class="py-3 px-4">15/06/2024</td>
-                                    <td class="py-3 px-4">Dr. Veterinaire</td>
-                                    <td class="py-3 px-4">
-                                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Complété</span>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <button class="text-purple-600 hover:text-purple-800 text-sm mr-2">Voir</button>
-                                        <button class="text-blue-600 hover:text-blue-800 text-sm">📄</button>
-                                    </td>
-                                </tr>
-                                <tr class="border-b border-gray-100 hover:bg-gray-50">
-                                    <td class="py-3 px-4">Milo Royal Star</td>
-                                    <td class="py-3 px-4">
-                                        <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">Test HCM</span>
-                                    </td>
-                                    <td class="py-3 px-4">10/06/2024</td>
-                                    <td class="py-3 px-4">Cardio Clinic</td>
-                                    <td class="py-3 px-4">
-                                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Normal</span>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <button class="text-purple-600 hover:text-purple-800 text-sm mr-2">Voir</button>
-                                        <button class="text-blue-600 hover:text-blue-800 text-sm">📄</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Inventory Section -->
-            <div id="inventory" class="section hidden p-8">
-                <div class="mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Stocks & Logistique</h2>
-                    <p class="text-gray-600">Gestion des approvisionnements et inventaire</p>
-                </div>
-
-                <!-- Inventory Stats -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Articles en stock</p>
-                                <p class="text-2xl font-bold text-gray-900">47</p>
-                            </div>
-                            <div class="text-blue-500 text-2xl">📦</div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Alertes stock bas</p>
-                                <p class="text-2xl font-bold text-red-600">3</p>
-                            </div>
-                            <div class="text-red-500 text-2xl">⚠️</div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Valeur totale</p>
-                                <p class="text-2xl font-bold text-gray-900">€1,245</p>
-                            </div>
-                            <div class="text-green-500 text-2xl">💰</div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Péremptions proches</p>
-                                <p class="text-2xl font-bold text-orange-600">2</p>
-                            </div>
-                            <div class="text-orange-500 text-2xl">📅</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Inventory Management -->
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-lg font-semibold text-gray-800">Inventaire</h3>
-                        <div class="flex space-x-3">
-                            <button onclick="exportInventory()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors">
-                                📊 Exporter
-                            </button>
-                            <button onclick="addInventoryItem()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                                + Ajouter article
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Category Tabs -->
-                    <div class="border-b border-gray-200 mb-6">
-                        <nav class="flex space-x-8">
-                            <button onclick="showInventoryCategory('all', this)" data-inventory-category="all" class="inventory-tab py-2 px-1 border-b-2 border-purple-500 text-purple-600 font-medium text-sm">
-                                Tous
-                            </button>
-                            <button onclick="showInventoryCategory('food', this)" data-inventory-category="food" class="inventory-tab py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-sm">
-                                Alimentation
-                            </button>
-                            <button onclick="showInventoryCategory('litter', this)" data-inventory-category="litter" class="inventory-tab py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-sm">
-                                Litière
-                            </button>
-                            <button onclick="showInventoryCategory('care', this)" data-inventory-category="care" class="inventory-tab py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-sm">
-                                Soins
-                            </button>
-                            <button onclick="showInventoryCategory('toys', this)" data-inventory-category="toys" class="inventory-tab py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-sm">
-                                Jouets
-                            </button>
-                        </nav>
-                    </div>
-
-                    <!-- Inventory Table -->
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="border-b border-gray-200">
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Article</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Catégorie</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Stock</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Seuil alerte</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">DLUO</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Prix unitaire</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="border-b border-gray-100 hover:bg-gray-50">
-                                    <td class="py-3 px-4">
-                                        <div>
-                                            <p class="font-medium text-gray-800">Royal Canin Kitten</p>
-                                            <p class="text-sm text-gray-600">Lot: RC2024-456</p>
-                                        </div>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Alimentation</span>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <span class="text-red-600 font-medium">2 kg</span>
-                                    </td>
-                                    <td class="py-3 px-4">5 kg</td>
-                                    <td class="py-3 px-4">
-                                        <span class="text-orange-600">15/08/2024</span>
-                                    </td>
-                                    <td class="py-3 px-4">€12.50/kg</td>
-                                    <td class="py-3 px-4">
-                                        <div class="flex space-x-2">
-                                            <button class="text-purple-600 hover:text-purple-800 text-sm">Modifier</button>
-                                            <button class="text-green-600 hover:text-green-800 text-sm">Réappro</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr class="border-b border-gray-100 hover:bg-gray-50">
-                                    <td class="py-3 px-4">
-                                        <div>
-                                            <p class="font-medium text-gray-800">Litière Catsan</p>
-                                            <p class="text-sm text-gray-600">Lot: CS2024-123</p>
-                                        </div>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Litière</span>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <span class="text-green-600 font-medium">25 L</span>
-                                    </td>
-                                    <td class="py-3 px-4">10 L</td>
-                                    <td class="py-3 px-4">-</td>
-                                    <td class="py-3 px-4">€8.90/10L</td>
-                                    <td class="py-3 px-4">
-                                        <div class="flex space-x-2">
-                                            <button class="text-purple-600 hover:text-purple-800 text-sm">Modifier</button>
-                                            <button class="text-green-600 hover:text-green-800 text-sm">Réappro</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Finances Section -->
-            <div id="finances" class="section hidden p-8">
-                <div class="mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Finances & Analytique</h2>
-                    <p class="text-gray-600">Suivi financier et analyses de performance</p>
-                </div>
-
-                <!-- Financial Overview -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl shadow-md p-6 text-white">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-green-100 text-sm">Revenus ce mois</p>
-                                <p class="text-3xl font-bold">€2,450</p>
-                                <p class="text-green-100 text-sm">+15% vs mois dernier</p>
-                            </div>
-                            <div class="text-4xl">💰</div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-xl shadow-md p-6 text-white">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-red-100 text-sm">Dépenses ce mois</p>
-                                <p class="text-3xl font-bold">€890</p>
-                                <p class="text-red-100 text-sm">-5% vs mois dernier</p>
-                            </div>
-                            <div class="text-4xl">📊</div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl shadow-md p-6 text-white">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-purple-100 text-sm">Bénéfice net</p>
-                                <p class="text-3xl font-bold">€1,560</p>
-                                <p class="text-purple-100 text-sm">Marge: 64%</p>
-                            </div>
-                            <div class="text-4xl">📈</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Financial Charts -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                    <!-- Revenue by Litter -->
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Revenus par portée</h3>
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-600">Portée Luna x Milo</span>
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-32 bg-gray-200 rounded-full h-2">
-                                        <div class="bg-purple-600 h-2 rounded-full" style="width: 80%"></div>
-                                    </div>
-                                    <span class="text-sm font-medium">€1,200</span>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-600">Portée Bella x Oscar</span>
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-32 bg-gray-200 rounded-full h-2">
-                                        <div class="bg-blue-600 h-2 rounded-full" style="width: 60%"></div>
-                                    </div>
-                                    <span class="text-sm font-medium">€900</span>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-600">Portée Mia x Felix</span>
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-32 bg-gray-200 rounded-full h-2">
-                                        <div class="bg-green-600 h-2 rounded-full" style="width: 45%"></div>
-                                    </div>
-                                    <span class="text-sm font-medium">€675</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Expense Breakdown -->
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Répartition des dépenses</h3>
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-center">
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                    <span class="text-sm text-gray-600">Alimentation</span>
-                                </div>
-                                <span class="text-sm font-medium">€320 (36%)</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                                    <span class="text-sm text-gray-600">Vétérinaire</span>
-                                </div>
-                                <span class="text-sm font-medium">€280 (31%)</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
-                                    <span class="text-sm text-gray-600">Tests génétiques</span>
-                                </div>
-                                <span class="text-sm font-medium">€150 (17%)</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                                    <span class="text-sm text-gray-600">Litière & soins</span>
-                                </div>
-                                <span class="text-sm font-medium">€90 (10%)</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-                                    <span class="text-sm text-gray-600">Expositions</span>
-                                </div>
-                                <span class="text-sm font-medium">€50 (6%)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Financial Reports -->
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-lg font-semibold text-gray-800">Rapports financiers</h3>
-                        <div class="flex space-x-3">
-                            <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option>Ce mois</option>
-                                <option>3 derniers mois</option>
-                                <option>Cette année</option>
-                                <option>Année dernière</option>
-                            </select>
-                            <button onclick="exportFinancialReport()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm">
-                                📊 Exporter PDF
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Key Metrics -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div class="text-center p-4 bg-gray-50 rounded-lg">
-                            <p class="text-2xl font-bold text-gray-800">€650</p>
-                            <p class="text-sm text-gray-600">Coût moyen/chaton</p>
-                        </div>
-                        <div class="text-center p-4 bg-gray-50 rounded-lg">
-                            <p class="text-2xl font-bold text-gray-800">45 jours</p>
-                            <p class="text-sm text-gray-600">Délai moyen adoption</p>
-                        </div>
-                        <div class="text-center p-4 bg-gray-50 rounded-lg">
-                            <p class="text-2xl font-bold text-gray-800">€12/jour</p>
-                            <p class="text-sm text-gray-600">Coût quotidien/chat</p>
-                        </div>
-                        <div class="text-center p-4 bg-gray-50 rounded-lg">
-                            <p class="text-2xl font-bold text-gray-800">3.2%</p>
-                            <p class="text-sm text-gray-600">COI moyen</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Website Section -->
-            <div id="website" class="section hidden p-8">
-                <div class="mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Site Public & Vitrine</h2>
-                    <p class="text-gray-600">Gestion du contenu public et des candidatures</p>
-                </div>
-
-                <!-- Website Stats -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Visiteurs ce mois</p>
-                                <p class="text-2xl font-bold text-gray-900">1,247</p>
-                            </div>
-                            <div class="text-blue-500 text-2xl">👥</div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Candidatures</p>
-                                <p class="text-2xl font-bold text-gray-900">23</p>
-                            </div>
-                            <div class="text-green-500 text-2xl">📝</div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Taux conversion</p>
-                                <p class="text-2xl font-bold text-gray-900">1.8%</p>
-                            </div>
-                            <div class="text-purple-500 text-2xl">📊</div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Pages vues</p>
-                                <p class="text-2xl font-bold text-gray-900">4,892</p>
-                            </div>
-                            <div class="text-orange-500 text-2xl">👁️</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Available Kittens Management -->
-                <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-lg font-semibold text-gray-800">Chatons disponibles - Publication</h3>
-                        <button onclick="publishKittens()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                            🌐 Publier en 1 clic
-                        </button>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div class="border border-gray-200 rounded-lg p-4">
-                            <div class="h-32 bg-gradient-to-br from-purple-200 to-pink-200 rounded-lg mb-3 flex items-center justify-center">
-                                <span class="text-3xl">🐱</span>
-                            </div>
-                            <div class="space-y-2">
-                                <h4 class="font-medium text-gray-800">Chaton 1 - Seal Point ♂</h4>
-                                <p class="text-sm text-gray-600">Portée Luna x Milo</p>
-                                <p class="text-sm text-gray-600">Né le: 19/08/2024</p>
-                                <div class="flex items-center justify-between">
-                                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Disponible</span>
-                                    <label class="flex items-center space-x-2">
-                                        <input type="checkbox" checked class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
-                                        <span class="text-sm text-gray-600">Publier</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="border border-gray-200 rounded-lg p-4">
-                            <div class="h-32 bg-gradient-to-br from-blue-200 to-purple-200 rounded-lg mb-3 flex items-center justify-center">
-                                <span class="text-3xl">🐱</span>
-                            </div>
-                            <div class="space-y-2">
-                                <h4 class="font-medium text-gray-800">Chaton 4 - Chocolate Point ♀</h4>
-                                <p class="text-sm text-gray-600">Portée Luna x Milo</p>
-                                <p class="text-sm text-gray-600">Né le: 19/08/2024</p>
-                                <div class="flex items-center justify-between">
-                                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Disponible</span>
-                                    <label class="flex items-center space-x-2">
-                                        <input type="checkbox" checked class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
-                                        <span class="text-sm text-gray-600">Publier</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="border border-gray-200 rounded-lg p-4 opacity-50">
-                            <div class="h-32 bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg mb-3 flex items-center justify-center">
-                                <span class="text-3xl">🐱</span>
-                            </div>
-                            <div class="space-y-2">
-                                <h4 class="font-medium text-gray-800">Chaton 2 - Blue Point ♀</h4>
-                                <p class="text-sm text-gray-600">Portée Luna x Milo</p>
-                                <p class="text-sm text-gray-600">Né le: 19/08/2024</p>
-                                <div class="flex items-center justify-between">
-                                    <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">Réservé</span>
-                                    <label class="flex items-center space-x-2">
-                                        <input type="checkbox" disabled class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
-                                        <span class="text-sm text-gray-400">Publier</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Website Content Management -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- Forms & Applications -->
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Formulaires & Candidatures</h3>
-                        
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                <div>
-                                    <p class="font-medium text-gray-800">Formulaire d'adoption</p>
-                                    <p class="text-sm text-gray-600">23 soumissions ce mois</p>
-                                </div>
-                                <button class="text-purple-600 hover:text-purple-800 text-sm">Configurer</button>
-                            </div>
-                            
-                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                <div>
-                                    <p class="font-medium text-gray-800">Liste d'attente</p>
-                                    <p class="text-sm text-gray-600">15 inscriptions actives</p>
-                                </div>
-                                <button class="text-purple-600 hover:text-purple-800 text-sm">Configurer</button>
-                            </div>
-                            
-                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                <div>
-                                    <p class="font-medium text-gray-800">Contact général</p>
-                                    <p class="text-sm text-gray-600">8 messages non lus</p>
-                                </div>
-                                <button class="text-purple-600 hover:text-purple-800 text-sm">Voir</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- SEO & Social Media -->
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">SEO & Réseaux sociaux</h3>
-                        
-                        <div class="space-y-4">
-                            <div class="p-3 bg-blue-50 rounded-lg">
-                                <div class="flex justify-between items-center mb-2">
-                                    <p class="font-medium text-gray-800">Partage Facebook</p>
-                                    <button onclick="shareToFacebook()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors">
-                                        Partager
-                                    </button>
-                                </div>
-                                <p class="text-sm text-gray-600">Carrousel chatons disponibles prêt</p>
-                            </div>
-                            
-                            <div class="p-3 bg-pink-50 rounded-lg">
-                                <div class="flex justify-between items-center mb-2">
-                                    <p class="font-medium text-gray-800">Stories Instagram</p>
-                                    <button onclick="shareToInstagram()" class="bg-pink-600 hover:bg-pink-700 text-white px-3 py-1 rounded text-sm transition-colors">
-                                        Exporter
-                                    </button>
-                                </div>
-                                <p class="text-sm text-gray-600">Images optimisées avec watermark</p>
-                            </div>
-                            
-                            <div class="p-3 bg-green-50 rounded-lg">
-                                <div class="flex justify-between items-center mb-2">
-                                    <p class="font-medium text-gray-800">OpenGraph</p>
-                                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Actif</span>
-                                </div>
-                                <p class="text-sm text-gray-600">Liens partageables optimisés</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Modals would go here -->
-    <div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-        <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-full overflow-y-auto">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 id="modalTitle" class="text-xl font-semibold text-gray-800">Modal Title</h3>
-                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
-                </div>
-                <div id="modalContent">
-                    <!-- Modal content will be inserted here -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Global state
-        let currentSection = 'dashboard';
-        let currentBreedingTab = 'heat';
-        let currentInventoryCategory = 'all';
-
-        // Navigation
-        function showSection(sectionName, buttonElement = null) {
-            if (buttonElement && !buttonElement.classList.contains('nav-btn')) {
-                buttonElement = buttonElement.closest('.nav-btn');
-            }
-            const targetSection = document.getElementById(sectionName);
-            if (!targetSection) {
-                return;
-            }
-
-            // Hide all sections
-            document.querySelectorAll('.section').forEach(section => {
-                section.classList.add('hidden');
-                section.classList.remove('fade-in');
-            });
-
-            // Show selected section
-            targetSection.classList.remove('hidden');
-            targetSection.classList.add('fade-in');
-
-            // Update navigation
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-purple-100', 'text-purple-800');
-                btn.classList.add('text-gray-700');
-                btn.removeAttribute('aria-current');
-            });
-
-            const activeButton = buttonElement || document.querySelector(`.nav-btn[data-section="${sectionName}"]`);
-            if (activeButton) {
-                activeButton.classList.add('bg-purple-100', 'text-purple-800');
-                activeButton.classList.remove('text-gray-700');
-                activeButton.setAttribute('aria-current', 'page');
-            }
-
-            currentSection = sectionName;
-        }
-
-        function initializeNavigation() {
-            document.querySelectorAll('.nav-btn').forEach(button => {
-                const section = button.dataset.section;
-                if (!section) {
-                    return;
-                }
-
-                button.addEventListener('click', () => {
-                    showSection(section, button);
-                });
-            });
-        }
-
-        // Breeding tabs
-        function showBreedingTab(tabName, buttonElement = null) {
-            const tabContent = document.getElementById(`${tabName}Tab`);
-            if (!tabContent) {
-                return;
-            }
-
-            // Hide all breeding content
-            document.querySelectorAll('.breeding-content').forEach(content => {
-                content.classList.add('hidden');
-            });
-
-            // Show selected tab content
-            tabContent.classList.remove('hidden');
-
-            // Update tab styling
-            document.querySelectorAll('.breeding-tab').forEach(tab => {
-                tab.classList.remove('border-purple-500', 'text-purple-600');
-                tab.classList.add('border-transparent', 'text-gray-500');
-            });
-
-            const activeTab = buttonElement || document.querySelector(`.breeding-tab[data-breeding-tab="${tabName}"]`);
-            if (activeTab) {
-                activeTab.classList.add('border-purple-500', 'text-purple-600');
-                activeTab.classList.remove('border-transparent', 'text-gray-500');
-            }
-
-            currentBreedingTab = tabName;
-        }
-
-        // Inventory categories
-        function showInventoryCategory(category, buttonElement = null) {
-            // Update tab styling
-            document.querySelectorAll('.inventory-tab').forEach(tab => {
-                tab.classList.remove('border-purple-500', 'text-purple-600');
-                tab.classList.add('border-transparent', 'text-gray-500');
-            });
-
-            const activeTab = buttonElement || document.querySelector(`.inventory-tab[data-inventory-category="${category}"]`);
-            if (activeTab) {
-                activeTab.classList.add('border-purple-500', 'text-purple-600');
-                activeTab.classList.remove('border-transparent', 'text-gray-500');
-            }
-
-            currentInventoryCategory = category;
-            // Here you would filter the inventory table based on category
-        }
-
-        // Modal functions
-        function showModal(title, content) {
-            document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalContent').innerHTML = content;
-            document.getElementById('modalOverlay').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('modalOverlay').classList.add('hidden');
-        }
-
-        // Cat management functions
-        function showAddCatModal() {
-            const content = `
-                <form onsubmit="addCat(event)" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="catName" class="block text-sm font-medium text-gray-700 mb-2">Nom d'usage</label>
-                            <input type="text" id="catName" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label for="catPedigree" class="block text-sm font-medium text-gray-700 mb-2">Nom de pedigree</label>
-                            <input type="text" id="catPedigree" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label for="catBirthDate" class="block text-sm font-medium text-gray-700 mb-2">Date de naissance</label>
-                            <input type="date" id="catBirthDate" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label for="catSex" class="block text-sm font-medium text-gray-700 mb-2">Sexe</label>
-                            <select id="catSex" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option value="">Sélectionner</option>
-                                <option value="male">Mâle</option>
-                                <option value="femelle">Femelle</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="catColor" class="block text-sm font-medium text-gray-700 mb-2">Couleur/EMS</label>
-                            <select id="catColor" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option value="">Sélectionner</option>
-                                <option value="seal">Seal Point</option>
-                                <option value="blue">Blue Point</option>
-                                <option value="chocolate">Chocolate Point</option>
-                                <option value="lilac">Lilac Point</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="catStatus" class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
-                            <select id="catStatus" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option value="">Sélectionner</option>
-                                <option value="reproducteur">Reproducteur</option>
-                                <option value="retraite">Retraité</option>
-                                <option value="chaton">Chaton</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="catMicrochip" class="block text-sm font-medium text-gray-700 mb-2">Numéro de puce</label>
-                            <input type="text" id="catMicrochip" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label for="catCatId" class="block text-sm font-medium text-gray-700 mb-2">CatID/Registre</label>
-                            <input type="text" id="catCatId" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                    </div>
-                    <div class="flex justify-end space-x-3 mt-6">
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                            Annuler
-                        </button>
-                        <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                            Ajouter le chat
-                        </button>
-                    </div>
-                </form>
-            `;
-            showModal('Ajouter un nouveau chat', content);
-        }
-
-        function addCat(event) {
-            event.preventDefault();
-            // Here you would normally save the cat data
-            closeModal();
-            // Show success message or update the cats grid
-            showNotification('Chat ajouté avec succès!', 'success');
-        }
-
-        function viewCatDetails(catId) {
-            const content = `
-                <div class="space-y-6">
-                    <div class="text-center">
-                        <div class="w-32 h-32 bg-gradient-to-br from-purple-200 to-pink-200 rounded-full mx-auto mb-4 flex items-center justify-center">
-                            <span class="text-6xl">🐱</span>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-800">Luna de Beaumont</h3>
-                        <p class="text-gray-600">Femelle • Seal Point • Reproducteur</p>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <h4 class="font-medium text-gray-800 mb-3">Informations générales</h4>
-                            <div class="space-y-2 text-sm">
-                                <p><span class="font-medium">Date de naissance:</span> 15/03/2021</p>
-                                <p><span class="font-medium">Âge:</span> 3 ans 4 mois</p>
-                                <p><span class="font-medium">Poids actuel:</span> 3.2 kg</p>
-                                <p><span class="font-medium">Microchip:</span> 250268500123456</p>
-                                <p><span class="font-medium">CatID:</span> BE-CAT-2021-0315</p>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <h4 class="font-medium text-gray-800 mb-3">Santé</h4>
-                            <div class="space-y-2 text-sm">
-                                <p><span class="font-medium">Dernière vaccination:</span> 15/06/2024</p>
-                                <p><span class="font-medium">Test HCM:</span> Normal (2024)</p>
-                                <p><span class="font-medium">Test SMA:</span> Clear</p>
-                                <p><span class="font-medium">Stérilisation:</span> Non (reproducteur)</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <h4 class="font-medium text-gray-800 mb-3">Généalogie</h4>
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <div class="text-center">
-                                <p class="font-medium">Luna de Beaumont</p>
-                                <div class="grid grid-cols-2 gap-4 mt-4">
-                                    <div class="text-center">
-                                        <p class="text-sm font-medium">Père</p>
-                                        <p class="text-sm text-gray-600">Champion Royal Star</p>
-                                    </div>
-                                    <div class="text-center">
-                                        <p class="text-sm font-medium">Mère</p>
-                                        <p class="text-sm text-gray-600">Princess Belle de Lune</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            showModal('Détails du chat', content);
-        }
-
-        function editCat(catId) {
-            // Similar to showAddCatModal but with pre-filled data
-            showAddCatModal();
-        }
-
-        // Breeding functions
-        function addHeatCycle() {
-            const content = `
-                <form onsubmit="saveHeatCycle(event)" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="heatCat" class="block text-sm font-medium text-gray-700 mb-2">Chat</label>
-                            <select id="heatCat" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option value="">Sélectionner un chat</option>
-                                <option value="luna">Luna de Beaumont</option>
-                                <option value="bella">Bella Princess</option>
-                                <option value="mia">Mia Royal</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="heatStartDate" class="block text-sm font-medium text-gray-700 mb-2">Date de début</label>
-                            <input type="date" id="heatStartDate" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label for="heatIntensity" class="block text-sm font-medium text-gray-700 mb-2">Intensité</label>
-                            <select id="heatIntensity" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option value="">Sélectionner</option>
-                                <option value="faible">Faible</option>
-                                <option value="moderee">Modérée</option>
-                                <option value="forte">Forte</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="heatDuration" class="block text-sm font-medium text-gray-700 mb-2">Durée estimée (jours)</label>
-                            <input type="number" id="heatDuration" min="1" max="14" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                    </div>
-                    <div>
-                        <label for="heatNotes" class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                        <textarea id="heatNotes" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
-                    </div>
-                    <div class="flex justify-end space-x-3 mt-6">
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                            Annuler
-                        </button>
-                        <button type="submit" class="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors">
-                            Enregistrer
-                        </button>
-                    </div>
-                </form>
-            `;
-            showModal('Nouvelle période de chaleurs', content);
-        }
-
-        function saveHeatCycle(event) {
-            event.preventDefault();
-            closeModal();
-            showNotification('Période de chaleurs enregistrée!', 'success');
-        }
-
-        function addLitter() {
-            const content = `
-                <form onsubmit="saveLitter(event)" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="litterMother" class="block text-sm font-medium text-gray-700 mb-2">Mère</label>
-                            <select id="litterMother" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option value="">Sélectionner</option>
-                                <option value="luna">Luna de Beaumont</option>
-                                <option value="bella">Bella Princess</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="litterFather" class="block text-sm font-medium text-gray-700 mb-2">Père</label>
-                            <select id="litterFather" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option value="">Sélectionner</option>
-                                <option value="milo">Milo Royal Star</option>
-                                <option value="oscar">Oscar Champion</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="litterBirthDate" class="block text-sm font-medium text-gray-700 mb-2">Date de naissance</label>
-                            <input type="date" id="litterBirthDate" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label for="litterKittensCount" class="block text-sm font-medium text-gray-700 mb-2">Nombre de chatons</label>
-                            <input type="number" id="litterKittensCount" min="1" max="8" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                    </div>
-                    <div>
-                        <label for="litterNotes" class="block text-sm font-medium text-gray-700 mb-2">Notes de mise-bas</label>
-                        <textarea id="litterNotes" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
-                    </div>
-                    <div class="flex justify-end space-x-3 mt-6">
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                            Annuler
-                        </button>
-                        <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                            Créer la portée
-                        </button>
-                    </div>
-                </form>
-            `;
-            showModal('Nouvelle portée', content);
-        }
-
-        function saveLitter(event) {
-            event.preventDefault();
-            closeModal();
-            showNotification('Portée créée avec succès!', 'success');
-        }
-
-        // Adoption functions
-        function addFamily() {
-            const content = `
-                <form onsubmit="saveFamily(event)" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="familyName" class="block text-sm font-medium text-gray-700 mb-2">Nom de famille</label>
-                            <input type="text" id="familyName" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label for="familyEmail" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                            <input type="email" id="familyEmail" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label for="familyPhone" class="block text-sm font-medium text-gray-700 mb-2">Téléphone</label>
-                            <input type="tel" id="familyPhone" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label for="familyPreferredSex" class="block text-sm font-medium text-gray-700 mb-2">Sexe préféré</label>
-                            <select id="familyPreferredSex" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option value="">Pas de préférence</option>
-                                <option value="male">Mâle</option>
-                                <option value="femelle">Femelle</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="familyPreferredColor" class="block text-sm font-medium text-gray-700 mb-2">Couleur préférée</label>
-                            <select id="familyPreferredColor" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option value="">Toutes couleurs</option>
-                                <option value="seal">Seal Point</option>
-                                <option value="blue">Blue Point</option>
-                                <option value="chocolate">Chocolate Point</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="familyBudget" class="block text-sm font-medium text-gray-700 mb-2">Budget (€)</label>
-                            <input type="number" id="familyBudget" min="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Expérience avec les chats</label>
-                        <div class="space-y-2">
-                            <label class="flex items-center">
-                                <input type="checkbox" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
-                                <span class="ml-2 text-sm text-gray-700">Première adoption</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
-                                <span class="ml-2 text-sm text-gray-700">Possède déjà des chats</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
-                                <span class="ml-2 text-sm text-gray-700">Enfants à la maison</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
-                                <span class="ml-2 text-sm text-gray-700">Autres animaux</span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="flex justify-end space-x-3 mt-6">
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                            Annuler
-                        </button>
-                        <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                            Ajouter la famille
-                        </button>
-                    </div>
-                </form>
-            `;
-            showModal('Nouvelle famille candidate', content);
-        }
-
-        function saveFamily(event) {
-            event.preventDefault();
-            closeModal();
-            showNotification('Famille ajoutée avec succès!', 'success');
-        }
-
-        function exportFamilies() {
-            showNotification('Export des familles en cours...', 'info');
-        }
-
-        // Health functions
-        function addHealthRecord() {
-            const content = `
-                <form onsubmit="saveHealthRecord(event)" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="healthCat" class="block text-sm font-medium text-gray-700 mb-2">Chat</label>
-                            <select id="healthCat" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option value="">Sélectionner un chat</option>
-                                <option value="luna">Luna de Beaumont</option>
-                                <option value="milo">Milo Royal Star</option>
-                                <option value="bella">Bella Princess</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="healthType" class="block text-sm font-medium text-gray-700 mb-2">Type de soin</label>
-                            <select id="healthType" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option value="">Sélectionner</option>
-                                <option value="vaccination">Vaccination</option>
-                                <option value="vermifuge">Vermifuge</option>
-                                <option value="antiparasitaire">Antiparasitaire</option>
-                                <option value="test_genetique">Test génétique</option>
-                                <option value="consultation">Consultation</option>
-                                <option value="sterilisation">Stérilisation</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="healthDate" class="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                            <input type="date" id="healthDate" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label for="healthVet" class="block text-sm font-medium text-gray-700 mb-2">Vétérinaire</label>
-                            <input type="text" id="healthVet" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                    </div>
-                    <div>
-                        <label for="healthNotes" class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                        <textarea id="healthNotes" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
-                    </div>
-                    <div class="flex justify-end space-x-3 mt-6">
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                            Annuler
-                        </button>
-                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                            Enregistrer
-                        </button>
-                    </div>
-                </form>
-            `;
-            showModal('Nouveau dossier médical', content);
-        }
-
-        function saveHealthRecord(event) {
-            event.preventDefault();
-            closeModal();
-            showNotification('Dossier médical enregistré!', 'success');
-        }
-
-        // Inventory functions
-        function addInventoryItem() {
-            const content = `
-                <form onsubmit="saveInventoryItem(event)" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="itemName" class="block text-sm font-medium text-gray-700 mb-2">Nom de l'article</label>
-                            <input type="text" id="itemName" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label for="itemCategory" class="block text-sm font-medium text-gray-700 mb-2">Catégorie</label>
-                            <select id="itemCategory" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option value="">Sélectionner</option>
-                                <option value="food">Alimentation</option>
-                                <option value="litter">Litière</option>
-                                <option value="care">Soins</option>
-                                <option value="toys">Jouets</option>
-                                <option value="supplements">Compléments</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="itemQuantity" class="block text-sm font-medium text-gray-700 mb-2">Quantité</label>
-                            <input type="number" id="itemQuantity" min="0" step="0.1" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label for="itemUnit" class="block text-sm font-medium text-gray-700 mb-2">Unité</label>
-                            <select id="itemUnit" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option value="">Sélectionner</option>
-                                <option value="kg">kg</option>
-                                <option value="L">L</option>
-                                <option value="pcs">pièces</option>
-                                <option value="boites">boîtes</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="itemThreshold" class="block text-sm font-medium text-gray-700 mb-2">Seuil d'alerte</label>
-                            <input type="number" id="itemThreshold" min="0" step="0.1" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label for="itemPrice" class="block text-sm font-medium text-gray-700 mb-2">Prix unitaire (€)</label>
-                            <input type="number" id="itemPrice" min="0" step="0.01" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label for="itemLot" class="block text-sm font-medium text-gray-700 mb-2">Numéro de lot</label>
-                            <input type="text" id="itemLot" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label for="itemExpiry" class="block text-sm font-medium text-gray-700 mb-2">DLUO</label>
-                            <input type="date" id="itemExpiry" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                    </div>
-                    <div class="flex justify-end space-x-3 mt-6">
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                            Annuler
-                        </button>
-                        <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                            Ajouter l'article
-                        </button>
-                    </div>
-                </form>
-            `;
-            showModal('Nouvel article d\'inventaire', content);
-        }
-
-        function saveInventoryItem(event) {
-            event.preventDefault();
-            closeModal();
-            showNotification('Article ajouté à l\'inventaire!', 'success');
-        }
-
-        function exportInventory() {
-            showNotification('Export de l\'inventaire en cours...', 'info');
-        }
-
-        // Financial functions
-        function exportFinancialReport() {
-            showNotification('Génération du rapport PDF en cours...', 'info');
-        }
-
-        // Website functions
-        function publishKittens() {
-            showNotification('Chatons publiés sur le site avec succès!', 'success');
-        }
-
-        function shareToFacebook() {
-            showNotification('Contenu partagé sur Facebook!', 'success');
-        }
-
-        function shareToInstagram() {
-            showNotification('Images exportées pour Instagram!', 'success');
-        }
-
-        // Notification system
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg text-white transition-all duration-300 transform translate-x-full`;
-            
-            switch(type) {
-                case 'success':
-                    notification.classList.add('bg-green-500');
-                    break;
-                case 'error':
-                    notification.classList.add('bg-red-500');
-                    break;
-                case 'warning':
-                    notification.classList.add('bg-orange-500');
-                    break;
-                default:
-                    notification.classList.add('bg-blue-500');
-            }
-            
-            notification.innerHTML = `
-                <div class="flex items-center space-x-2">
-                    <span>${message}</span>
-                    <button onclick="this.parentElement.parentElement.remove()" class="text-white hover:text-gray-200">×</button>
-                </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Animate in
-            setTimeout(() => {
-                notification.classList.remove('translate-x-full');
-            }, 100);
-            
-            // Auto remove after 3 seconds
-            setTimeout(() => {
-                notification.classList.add('translate-x-full');
-                setTimeout(() => {
-                    if (notification.parentElement) {
-                        notification.remove();
-                    }
-                }, 300);
-            }, 3000);
-        }
-
-        function initializeApp() {
-            initializeNavigation();
-
-            const defaultNavButton = document.querySelector('.nav-btn[data-section="dashboard"]');
-            if (defaultNavButton && defaultNavButton.dataset.section) {
-                showSection(defaultNavButton.dataset.section, defaultNavButton);
-            }
-
-            const defaultBreedingTab = document.querySelector('.breeding-tab[data-breeding-tab="heat"]');
-            if (defaultBreedingTab) {
-                showBreedingTab('heat', defaultBreedingTab);
-            }
-
-            const defaultInventoryTab = document.querySelector('.inventory-tab[data-inventory-category="all"]');
-            if (defaultInventoryTab) {
-                showInventoryCategory('all', defaultInventoryTab);
-            }
-
-            // Close modal when clicking outside
-            const modalOverlay = document.getElementById('modalOverlay');
-            if (modalOverlay) {
-                modalOverlay.addEventListener('click', function(e) {
-                    if (e.target === this) {
-                        closeModal();
-                    }
-                });
-            }
-
-            // Add keyboard navigation
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    closeModal();
-                }
-            });
-        }
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initializeApp);
-        } else {
-            initializeApp();
-        }
-    </script>
-</body>
-</html>
+diff --git a/README.md b/README.md
+index 9b2e69633a0148619ba0d788a9fad031e2b8d772..d60d3cc750c6f9d6f13b07bc856e8e1ab16ca92e 100644
+--- a/README.md
++++ b/README.md
+@@ -1 +1,28 @@
+-applicationchat1
++# Gestion d'élevage félin – version HTML autonome
++
++Ce dépôt propose désormais deux approches :
++
++- **L'application React d'origine** (dossier `src/`) peut être utilisée si vous souhaitez conserver un outillage moderne.
++- **Une version légère en HTML + JavaScript natif** (dossier `public/`) fonctionne dans n'importe quelle page statique sans outil de build.
++
++## Utiliser la version HTML
++
++1. Ouvrez le fichier [`public/index.html`](public/index.html) dans votre navigateur préféré.
++2. Cliquez sur **Paramètres Supabase** pour renseigner l'URL et la clé anonyme de votre projet.
++   - Les informations sont stockées en local (localStorage) et peuvent être effacées à tout moment.
++3. Testez la connexion puis commencez à gérer vos chats, portées et chatons.
++
++### Fonctionnalités incluses
++
++- Tableau de bord avec statistiques de base (chats actifs, portées en cours, chatons disponibles).
++- Gestion CRUD complète pour les chats, portées et chatons via formulaires natifs.
++- Filtres rapides par statut pour les portées et les chatons.
++- Interface responsive et prête à être intégrée dans un site existant sans dépendances supplémentaires.
++
++### Personnalisation
++
++Le fichier [`public/styles.css`](public/styles.css) contient toutes les règles de style et peut être adapté facilement. La logique applicative se trouve dans [`public/app.js`](public/app.js) et utilise la bibliothèque Supabase via CDN.
++
++## Développement
++
++Vous pouvez continuer à faire évoluer l'application React si besoin (`npm install` puis `npm run dev`). Les améliorations réalisées dans la version HTML peuvent inspirer la refonte d'une future interface.
+diff --git a/public/app.js b/public/app.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..357d79ce44a13ab42300758987504e4d5c45fa53
+--- /dev/null
++++ b/public/app.js
+@@ -0,0 +1,852 @@
++const state = {
++  supabase: null,
++  cats: [],
++  litters: [],
++  kittens: [],
++  catMap: {},
++  litterMap: {},
++  editingCatId: null,
++  editingLitterId: null,
++  editingKittenId: null,
++  litterFilter: 'all',
++  kittenFilter: 'all',
++};
++
++const dom = {
++  configPanel: document.getElementById('config-panel'),
++  configForm: document.getElementById('config-form'),
++  supabaseUrlInput: document.getElementById('supabase-url'),
++  supabaseKeyInput: document.getElementById('supabase-key'),
++  testConnectionBtn: document.getElementById('test-connection'),
++  clearCredentialsBtn: document.getElementById('clear-credentials'),
++  toggleConfigBtn: document.getElementById('toggle-config'),
++  navButtons: Array.from(document.querySelectorAll('.main-nav button')),
++  switchViewButtons: Array.from(document.querySelectorAll('[data-switch-view]')),
++  views: {
++    dashboard: document.getElementById('dashboard-view'),
++    cats: document.getElementById('cats-view'),
++    litters: document.getElementById('litters-view'),
++    kittens: document.getElementById('kittens-view'),
++  },
++  alerts: document.getElementById('alerts'),
++  toast: document.getElementById('toast'),
++  stats: {
++    totalCats: document.querySelector('[data-stat="totalCats"]'),
++    activeCats: document.querySelector('[data-stat="activeCats"]'),
++    totalLitters: document.querySelector('[data-stat="totalLitters"]'),
++    activeLitters: document.querySelector('[data-stat="activeLitters"]'),
++    totalKittens: document.querySelector('[data-stat="totalKittens"]'),
++    availableKittens: document.querySelector('[data-stat="availableKittens"]'),
++  },
++  catForm: document.getElementById('cat-form'),
++  cancelCatEdit: document.getElementById('cancel-cat-edit'),
++  catTableBody: document.getElementById('cat-table-body'),
++  catCount: document.getElementById('cat-count'),
++  refreshCats: document.getElementById('refresh-cats'),
++  litterForm: document.getElementById('litter-form'),
++  cancelLitterEdit: document.getElementById('cancel-litter-edit'),
++  litterTableBody: document.getElementById('litter-table-body'),
++  litterFilter: document.getElementById('litter-filter'),
++  litterCount: document.getElementById('litter-count'),
++  refreshLitters: document.getElementById('refresh-litters'),
++  kittenForm: document.getElementById('kitten-form'),
++  cancelKittenEdit: document.getElementById('cancel-kitten-edit'),
++  kittenTableBody: document.getElementById('kitten-table-body'),
++  kittenFilter: document.getElementById('kitten-filter'),
++  kittenCount: document.getElementById('kitten-count'),
++  refreshKittens: document.getElementById('refresh-kittens'),
++};
++
++const statusLabels = {
++  planned: 'Planifiée',
++  pregnant: 'En gestation',
++  born: 'Née',
++  weaned: 'Sevrée',
++  available: 'Disponible',
++  reserved: 'Réservé',
++  sold: 'Vendu',
++  kept: 'Gardé',
++};
++
++const sexLabels = {
++  male: 'Mâle',
++  female: 'Femelle',
++};
++
++let toastTimeout;
++
++init();
++
++function init() {
++  bindNavigation();
++  bindConfig();
++  bindForms();
++  bindTables();
++  bindFilters();
++  restoreCredentials();
++  setActiveView('dashboard');
++}
++
++function bindNavigation() {
++  dom.navButtons.forEach((button) => {
++    button.addEventListener('click', () => setActiveView(button.dataset.view));
++  });
++
++  dom.switchViewButtons.forEach((button) => {
++    button.addEventListener('click', () => setActiveView(button.dataset.switchView));
++  });
++}
++
++function bindConfig() {
++  dom.toggleConfigBtn.addEventListener('click', () => {
++    dom.configPanel.classList.toggle('hidden');
++  });
++
++  dom.configForm.addEventListener('submit', (event) => {
++    event.preventDefault();
++    const url = dom.supabaseUrlInput.value.trim();
++    const key = dom.supabaseKeyInput.value.trim();
++
++    if (!url || !key) {
++      return setAlert("Merci de renseigner l'URL et la clé Supabase.");
++    }
++
++    localStorage.setItem('supabaseUrl', url);
++    localStorage.setItem('supabaseAnonKey', key);
++    initialiseSupabase(url, key);
++    showToast('Paramètres enregistrés.');
++  });
++
++  dom.testConnectionBtn.addEventListener('click', async () => {
++    try {
++      requireSupabase();
++    } catch (error) {
++      const url = dom.supabaseUrlInput.value.trim();
++      const key = dom.supabaseKeyInput.value.trim();
++      if (url && key) {
++        initialiseSupabase(url, key, { silent: true });
++      } else {
++        return setAlert('Renseignez vos identifiants Supabase avant le test.');
++      }
++    }
++
++    try {
++      const { error } = await state.supabase.from('cats').select('id').limit(1);
++      if (error) throw error;
++      showToast('Connexion Supabase opérationnelle ✅');
++      setAlert('');
++    } catch (error) {
++      console.error(error);
++      setAlert("Impossible de contacter Supabase : " + error.message);
++    }
++  });
++
++  dom.clearCredentialsBtn.addEventListener('click', () => {
++    localStorage.removeItem('supabaseUrl');
++    localStorage.removeItem('supabaseAnonKey');
++    dom.supabaseUrlInput.value = '';
++    dom.supabaseKeyInput.value = '';
++    state.supabase = null;
++    setAlert('Identifiants Supabase effacés.');
++    showToast('Connexion supprimée. Configurez à nouveau avant usage.');
++  });
++}
++
++function bindForms() {
++  dom.catForm.addEventListener('submit', handleCatSubmit);
++  dom.cancelCatEdit.addEventListener('click', () => resetCatForm());
++  dom.refreshCats.addEventListener('click', () => loadCats());
++
++  dom.litterForm.addEventListener('submit', handleLitterSubmit);
++  dom.cancelLitterEdit.addEventListener('click', () => resetLitterForm());
++  dom.refreshLitters.addEventListener('click', () => loadLitters());
++
++  dom.kittenForm.addEventListener('submit', handleKittenSubmit);
++  dom.cancelKittenEdit.addEventListener('click', () => resetKittenForm());
++  dom.refreshKittens.addEventListener('click', () => loadKittens());
++}
++
++function bindTables() {
++  dom.catTableBody.addEventListener('click', (event) => {
++    const target = event.target;
++    if (target.matches('.edit-cat')) {
++      const id = target.dataset.id;
++      const cat = state.cats.find((item) => item.id === id);
++      if (cat) startCatEdition(cat);
++    }
++    if (target.matches('.delete-cat')) {
++      const id = target.dataset.id;
++      deleteCat(id);
++    }
++  });
++
++  dom.litterTableBody.addEventListener('click', (event) => {
++    const target = event.target;
++    if (target.matches('.edit-litter')) {
++      const litter = state.litters.find((item) => item.id === target.dataset.id);
++      if (litter) startLitterEdition(litter);
++    }
++    if (target.matches('.delete-litter')) {
++      deleteLitter(target.dataset.id);
++    }
++  });
++
++  dom.kittenTableBody.addEventListener('click', (event) => {
++    const target = event.target;
++    if (target.matches('.edit-kitten')) {
++      const kitten = state.kittens.find((item) => item.id === target.dataset.id);
++      if (kitten) startKittenEdition(kitten);
++    }
++    if (target.matches('.delete-kitten')) {
++      deleteKitten(target.dataset.id);
++    }
++  });
++}
++
++function bindFilters() {
++  dom.litterFilter.addEventListener('change', () => {
++    state.litterFilter = dom.litterFilter.value;
++    renderLitters();
++  });
++
++  dom.kittenFilter.addEventListener('change', () => {
++    state.kittenFilter = dom.kittenFilter.value;
++    renderKittens();
++  });
++}
++
++function restoreCredentials() {
++  const url = localStorage.getItem('supabaseUrl');
++  const key = localStorage.getItem('supabaseAnonKey');
++  if (url) dom.supabaseUrlInput.value = url;
++  if (key) dom.supabaseKeyInput.value = key;
++  if (url && key) {
++    initialiseSupabase(url, key, { silent: true });
++  } else {
++    setAlert('Configurez votre connexion Supabase pour commencer.');
++  }
++}
++
++function setActiveView(view) {
++  dom.navButtons.forEach((button) => {
++    button.classList.toggle('active', button.dataset.view === view);
++  });
++
++  dom.switchViewButtons.forEach((button) => {
++    button.setAttribute('aria-pressed', button.dataset.switchView === view ? 'true' : 'false');
++  });
++
++  Object.entries(dom.views).forEach(([key, element]) => {
++    element.classList.toggle('active', key === view);
++  });
++}
++
++function setAlert(message = '', type = 'error') {
++  dom.alerts.textContent = message;
++  dom.alerts.dataset.type = type;
++}
++
++function showToast(message) {
++  clearTimeout(toastTimeout);
++  dom.toast.textContent = message;
++  dom.toast.classList.add('visible');
++  toastTimeout = setTimeout(() => {
++    dom.toast.classList.remove('visible');
++  }, 3200);
++}
++
++function initialiseSupabase(url, key, options = {}) {
++  try {
++    state.supabase = window.supabase.createClient(url, key);
++    setAlert('');
++    if (!options.silent) {
++      showToast('Connexion à Supabase configurée.');
++    }
++    loadAllData();
++  } catch (error) {
++    console.error('Initialisation Supabase échouée', error);
++    setAlert("Impossible d'initialiser Supabase : " + error.message);
++  }
++}
++
++function requireSupabase() {
++  if (!state.supabase) {
++    throw new Error('Supabase non configuré.');
++  }
++  return state.supabase;
++}
++
++async function loadAllData() {
++  try {
++    await loadCats({ silent: true });
++    await loadLitters({ silent: true });
++    await loadKittens({ silent: true });
++    updateStats();
++  } catch (error) {
++    console.error(error);
++    setAlert('Erreur de chargement : ' + error.message);
++  }
++}
++
++async function loadCats({ silent } = {}) {
++  try {
++    const supabase = requireSupabase();
++    const { data, error } = await supabase
++      .from('cats')
++      .select('*')
++      .order('name', { ascending: true });
++
++    if (error) throw error;
++
++    state.cats = data || [];
++    state.catMap = Object.fromEntries(state.cats.map((cat) => [cat.id, cat]));
++    renderCats();
++    renderLitterFormOptions();
++    updateStats();
++    if (!silent) showToast('Liste des chats mise à jour.');
++  } catch (error) {
++    console.error('Chargement des chats échoué', error);
++    setAlert('Erreur lors du chargement des chats : ' + error.message);
++  }
++}
++
++async function loadLitters({ silent } = {}) {
++  try {
++    const supabase = requireSupabase();
++    const { data, error } = await supabase
++      .from('litters')
++      .select('*')
++      .order('mating_date', { ascending: false });
++
++    if (error) throw error;
++
++    state.litters = data || [];
++    state.litterMap = Object.fromEntries(state.litters.map((litter) => [litter.id, litter]));
++    renderLitters();
++    renderKittenFormOptions();
++    updateStats();
++    if (!silent) showToast('Liste des portées mise à jour.');
++  } catch (error) {
++    console.error('Chargement des portées échoué', error);
++    setAlert('Erreur lors du chargement des portées : ' + error.message);
++  }
++}
++
++async function loadKittens({ silent } = {}) {
++  try {
++    const supabase = requireSupabase();
++    const { data, error } = await supabase
++      .from('kittens')
++      .select('*')
++      .order('created_at', { ascending: false });
++
++    if (error) throw error;
++
++    state.kittens = data || [];
++    renderKittens();
++    updateStats();
++    if (!silent) showToast('Liste des chatons mise à jour.');
++  } catch (error) {
++    console.error('Chargement des chatons échoué', error);
++    setAlert('Erreur lors du chargement des chatons : ' + error.message);
++  }
++}
++
++function renderCats() {
++  const tbody = dom.catTableBody;
++  tbody.innerHTML = '';
++
++  if (state.cats.length === 0) {
++    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Aucun chat enregistré pour le moment.</td></tr>';
++  } else {
++    state.cats.forEach((cat) => {
++      const tr = document.createElement('tr');
++      const statusClass = cat.is_active ? 'status-pill active' : 'status-pill inactive';
++      const statusLabel = cat.is_active ? 'Actif' : 'Inactif';
++      tr.innerHTML = `
++        <td>
++          <strong>${escapeHtml(cat.name)}</strong>
++          <div class="muted">${formatDate(cat.birth_date)}</div>
++        </td>
++        <td>${sexLabels[cat.sex] || '—'}</td>
++        <td>${escapeHtml(cat.breed || '—')}</td>
++        <td><span class="${statusClass}">${statusLabel}</span></td>
++        <td>${formatDateTime(cat.updated_at)}</td>
++        <td>
++          <div class="table-actions">
++            <button class="secondary small edit-cat" data-id="${cat.id}">Modifier</button>
++            <button class="danger small delete-cat" data-id="${cat.id}">Supprimer</button>
++          </div>
++        </td>
++      `;
++      tbody.appendChild(tr);
++    });
++  }
++
++  dom.catCount.textContent = `${state.cats.length} chat(s)`;
++}
++
++function renderLitterFormOptions() {
++  const motherSelect = dom.litterForm.elements['mother_id'];
++  const fatherSelect = dom.litterForm.elements['father_id'];
++  populateSelect(motherSelect, state.cats.filter((cat) => cat.sex === 'female'), 'Sélectionner une mère');
++  populateSelect(fatherSelect, state.cats.filter((cat) => cat.sex === 'male'), 'Sélectionner un père');
++}
++
++function renderKittenFormOptions() {
++  const litterSelect = dom.kittenForm.elements['litter_id'];
++  populateSelect(
++    litterSelect,
++    state.litters,
++    'Sélectionner une portée',
++    (litter) => {
++      const mother = state.catMap[litter.mother_id];
++      const father = state.catMap[litter.father_id];
++      const parents = [mother?.name, father?.name].filter(Boolean).join(' × ');
++      const date = litter.birth_date || litter.expected_birth_date;
++      return `${parents || 'Portée'} – ${formatDate(date)}`;
++    }
++  );
++}
++
++function populateSelect(select, items, placeholder, labelFn) {
++  const currentValue = select.value;
++  select.innerHTML = '';
++  const placeholderOption = document.createElement('option');
++  placeholderOption.value = '';
++  placeholderOption.textContent = placeholder;
++  placeholderOption.disabled = true;
++  placeholderOption.selected = !currentValue;
++  select.appendChild(placeholderOption);
++
++  items.forEach((item) => {
++    const option = document.createElement('option');
++    option.value = item.id;
++    option.textContent = labelFn ? labelFn(item) : item.name;
++    select.appendChild(option);
++  });
++
++  if (currentValue) {
++    const escaped = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(currentValue) : currentValue.replace(/"/g, '\"');
++    const option = select.querySelector(`option[value="${escaped}"]`);
++    if (option) {
++      select.value = currentValue;
++    }
++  }
++}
++
++function renderLitters() {
++  const tbody = dom.litterTableBody;
++  tbody.innerHTML = '';
++
++  const filtered = state.litterFilter === 'all'
++    ? state.litters
++    : state.litters.filter((litter) => litter.status === state.litterFilter);
++
++  if (filtered.length === 0) {
++    tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Aucune portée à afficher.</td></tr>';
++  } else {
++    filtered.forEach((litter) => {
++      const mother = state.catMap[litter.mother_id];
++      const father = state.catMap[litter.father_id];
++      const statusClass = `status-pill ${litter.status}`;
++      const kittensCount = litter.kitten_count ?? '—';
++      const row = document.createElement('tr');
++      row.innerHTML = `
++        <td>${escapeHtml(mother?.name || '—')}</td>
++        <td>${escapeHtml(father?.name || '—')}</td>
++        <td>${formatDate(litter.mating_date)}</td>
++        <td>${formatDate(litter.birth_date)}</td>
++        <td><span class="${statusClass}">${statusLabels[litter.status] || litter.status}</span></td>
++        <td>${kittensCount}</td>
++        <td>
++          <div class="table-actions">
++            <button class="secondary small edit-litter" data-id="${litter.id}">Modifier</button>
++            <button class="danger small delete-litter" data-id="${litter.id}">Supprimer</button>
++          </div>
++        </td>
++      `;
++      tbody.appendChild(row);
++    });
++  }
++
++  dom.litterCount.textContent = `${state.litters.length} portée(s)`;
++}
++
++function renderKittens() {
++  const tbody = dom.kittenTableBody;
++  tbody.innerHTML = '';
++
++  const filtered = state.kittenFilter === 'all'
++    ? state.kittens
++    : state.kittens.filter((kitten) => kitten.status === state.kittenFilter);
++
++  if (filtered.length === 0) {
++    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Aucun chaton correspondant au filtre.</td></tr>';
++  } else {
++    filtered.forEach((kitten) => {
++      const litter = state.litterMap[kitten.litter_id];
++      const parents = litter
++        ? [state.catMap[litter.mother_id]?.name, state.catMap[litter.father_id]?.name]
++            .filter(Boolean)
++            .join(' × ')
++        : null;
++      const litterLabel = parents ? `${parents} (${formatDate(litter?.birth_date || litter?.expected_birth_date)})` : '—';
++      const statusClass = `status-pill ${kitten.status}`;
++      const row = document.createElement('tr');
++      row.innerHTML = `
++        <td>
++          <strong>${escapeHtml(kitten.name)}</strong>
++          <div class="muted">${sexLabels[kitten.sex] || ''}</div>
++        </td>
++        <td>${escapeHtml(litterLabel || '—')}</td>
++        <td><span class="${statusClass}">${statusLabels[kitten.status] || kitten.status}</span></td>
++        <td>${formatWeight(kitten.birth_weight, kitten.current_weight)}</td>
++        <td>${formatDateTime(kitten.updated_at)}</td>
++        <td>
++          <div class="table-actions">
++            <button class="secondary small edit-kitten" data-id="${kitten.id}">Modifier</button>
++            <button class="danger small delete-kitten" data-id="${kitten.id}">Supprimer</button>
++          </div>
++        </td>
++      `;
++      tbody.appendChild(row);
++    });
++  }
++
++  dom.kittenCount.textContent = `${state.kittens.length} chaton(s)`;
++}
++
++function formatWeight(birth, current) {
++  const values = [];
++  if (birth != null && birth !== '') values.push(`${birth} g`);
++  if (current != null && current !== '') values.push(`${current} g`);
++  return values.join(' → ') || '—';
++}
++
++function updateStats() {
++  const totalCats = state.cats.length;
++  const activeCats = state.cats.filter((cat) => cat.is_active).length;
++  const totalLitters = state.litters.length;
++  const activeLitters = state.litters.filter((litter) => ['pregnant', 'born'].includes(litter.status)).length;
++  const totalKittens = state.kittens.length;
++  const availableKittens = state.kittens.filter((kitten) => kitten.status === 'available').length;
++
++  dom.stats.totalCats.textContent = totalCats.toString();
++  dom.stats.activeCats.textContent = `${activeCats} actif${activeCats > 1 ? 's' : ''}`;
++  dom.stats.totalLitters.textContent = totalLitters.toString();
++  dom.stats.activeLitters.textContent = `${activeLitters} en cours`;
++  dom.stats.totalKittens.textContent = totalKittens.toString();
++  dom.stats.availableKittens.textContent = `${availableKittens} disponible${availableKittens > 1 ? 's' : ''}`;
++}
++
++async function handleCatSubmit(event) {
++  event.preventDefault();
++  try {
++    const supabase = requireSupabase();
++    const form = event.target;
++    const data = new FormData(form);
++    const payload = {
++      name: data.get('name').trim(),
++      birth_date: data.get('birth_date') || null,
++      sex: data.get('sex'),
++      color: data.get('color')?.trim() || null,
++      breed: data.get('breed')?.trim() || null,
++      chip_number: data.get('chip_number')?.trim() || null,
++      passport_number: data.get('passport_number')?.trim() || null,
++      weight: parseFloat(data.get('weight')) || null,
++      notes: data.get('notes')?.trim() || null,
++      photo_url: data.get('photo_url')?.trim() || null,
++      is_active: form.elements['is_active'].checked,
++      updated_at: new Date().toISOString(),
++    };
++
++    if (!payload.name) {
++      return setAlert('Le nom du chat est obligatoire.');
++    }
++
++    if (state.editingCatId) {
++      const { error } = await supabase
++        .from('cats')
++        .update(payload)
++        .eq('id', state.editingCatId);
++      if (error) throw error;
++      showToast('Chat mis à jour avec succès.');
++    } else {
++      payload.created_at = new Date().toISOString();
++      const { error } = await supabase.from('cats').insert([payload]);
++      if (error) throw error;
++      showToast('Nouveau chat enregistré.');
++    }
++
++    await loadCats({ silent: true });
++    resetCatForm();
++  } catch (error) {
++    console.error('Enregistrement du chat échoué', error);
++    setAlert("Impossible d'enregistrer le chat : " + error.message);
++  }
++}
++
++function startCatEdition(cat) {
++  state.editingCatId = cat.id;
++  dom.catForm.querySelector('#cat-form-title').textContent = 'Modifier un chat';
++  dom.catForm.elements['name'].value = cat.name || '';
++  dom.catForm.elements['birth_date'].value = formatInputDate(cat.birth_date);
++  dom.catForm.elements['sex'].value = cat.sex || 'male';
++  dom.catForm.elements['color'].value = cat.color || '';
++  dom.catForm.elements['breed'].value = cat.breed || '';
++  dom.catForm.elements['weight'].value = cat.weight ?? '';
++  dom.catForm.elements['chip_number'].value = cat.chip_number || '';
++  dom.catForm.elements['passport_number'].value = cat.passport_number || '';
++  dom.catForm.elements['photo_url'].value = cat.photo_url || '';
++  dom.catForm.elements['notes'].value = cat.notes || '';
++  dom.catForm.elements['is_active'].checked = Boolean(cat.is_active);
++  setAlert('Modification d\'un chat en cours.', 'info');
++  window.scrollTo({ top: dom.catForm.offsetTop - 80, behavior: 'smooth' });
++}
++
++function resetCatForm() {
++  state.editingCatId = null;
++  dom.catForm.reset();
++  dom.catForm.querySelector('#cat-form-title').textContent = 'Ajouter un chat';
++  setAlert('');
++}
++
++async function deleteCat(id) {
++  if (!confirm('Supprimer ce chat ?')) return;
++  try {
++    const supabase = requireSupabase();
++    const { error } = await supabase.from('cats').delete().eq('id', id);
++    if (error) throw error;
++    showToast('Chat supprimé.');
++    await loadCats({ silent: true });
++    await loadLitters({ silent: true });
++    await loadKittens({ silent: true });
++    updateStats();
++  } catch (error) {
++    console.error('Suppression du chat échouée', error);
++    setAlert('Impossible de supprimer le chat : ' + error.message);
++  }
++}
++
++async function handleLitterSubmit(event) {
++  event.preventDefault();
++  try {
++    const supabase = requireSupabase();
++    const form = event.target;
++    const data = new FormData(form);
++    const payload = {
++      mother_id: data.get('mother_id'),
++      father_id: data.get('father_id'),
++      mating_date: data.get('mating_date') || null,
++      expected_birth_date: data.get('expected_birth_date') || null,
++      birth_date: data.get('birth_date') || null,
++      kitten_count: parseNumber(data.get('kitten_count')),
++      male_count: parseNumber(data.get('male_count')),
++      female_count: parseNumber(data.get('female_count')),
++      status: data.get('status'),
++      notes: data.get('notes')?.trim() || null,
++      updated_at: new Date().toISOString(),
++    };
++
++    if (!payload.mother_id || !payload.father_id) {
++      return setAlert('Sélectionnez un père et une mère pour la portée.');
++    }
++
++    if (state.editingLitterId) {
++      const { error } = await supabase
++        .from('litters')
++        .update(payload)
++        .eq('id', state.editingLitterId);
++      if (error) throw error;
++      showToast('Portée mise à jour.');
++    } else {
++      payload.created_at = new Date().toISOString();
++      const { error } = await supabase.from('litters').insert([payload]);
++      if (error) throw error;
++      showToast('Nouvelle portée enregistrée.');
++    }
++
++    await loadLitters({ silent: true });
++    resetLitterForm();
++  } catch (error) {
++    console.error('Enregistrement de la portée échoué', error);
++    setAlert("Impossible d'enregistrer la portée : " + error.message);
++  }
++}
++
++function startLitterEdition(litter) {
++  state.editingLitterId = litter.id;
++  dom.litterForm.querySelector('#litter-form-title').textContent = 'Modifier une portée';
++  renderLitterFormOptions();
++  dom.litterForm.elements['mother_id'].value = litter.mother_id || '';
++  dom.litterForm.elements['father_id'].value = litter.father_id || '';
++  dom.litterForm.elements['mating_date'].value = formatInputDate(litter.mating_date);
++  dom.litterForm.elements['expected_birth_date'].value = formatInputDate(litter.expected_birth_date);
++  dom.litterForm.elements['birth_date'].value = formatInputDate(litter.birth_date);
++  dom.litterForm.elements['kitten_count'].value = litter.kitten_count ?? '';
++  dom.litterForm.elements['male_count'].value = litter.male_count ?? '';
++  dom.litterForm.elements['female_count'].value = litter.female_count ?? '';
++  dom.litterForm.elements['status'].value = litter.status;
++  dom.litterForm.elements['notes'].value = litter.notes || '';
++  setAlert('Modification d\'une portée en cours.', 'info');
++  window.scrollTo({ top: dom.litterForm.offsetTop - 80, behavior: 'smooth' });
++}
++
++function resetLitterForm() {
++  state.editingLitterId = null;
++  dom.litterForm.reset();
++  dom.litterForm.querySelector('#litter-form-title').textContent = 'Ajouter une portée';
++  renderLitterFormOptions();
++  setAlert('');
++}
++
++async function deleteLitter(id) {
++  if (!confirm('Supprimer cette portée ?')) return;
++  try {
++    const supabase = requireSupabase();
++    const { error } = await supabase.from('litters').delete().eq('id', id);
++    if (error) throw error;
++    showToast('Portée supprimée.');
++    await loadLitters({ silent: true });
++    await loadKittens({ silent: true });
++  } catch (error) {
++    console.error('Suppression de la portée échouée', error);
++    setAlert('Impossible de supprimer la portée : ' + error.message);
++  }
++}
++
++async function handleKittenSubmit(event) {
++  event.preventDefault();
++  try {
++    const supabase = requireSupabase();
++    const form = event.target;
++    const data = new FormData(form);
++    const payload = {
++      litter_id: data.get('litter_id'),
++      name: data.get('name').trim(),
++      sex: data.get('sex'),
++      color: data.get('color')?.trim() || null,
++      birth_weight: parseNumber(data.get('birth_weight')),
++      current_weight: parseNumber(data.get('current_weight')),
++      chip_number: data.get('chip_number')?.trim() || null,
++      passport_number: data.get('passport_number')?.trim() || null,
++      status: data.get('status'),
++      notes: data.get('notes')?.trim() || null,
++      photo_url: data.get('photo_url')?.trim() || null,
++      updated_at: new Date().toISOString(),
++    };
++
++    if (!payload.litter_id) {
++      return setAlert('Sélectionnez la portée du chaton.');
++    }
++    if (!payload.name) {
++      return setAlert('Le nom du chaton est obligatoire.');
++    }
++
++    if (state.editingKittenId) {
++      const { error } = await supabase
++        .from('kittens')
++        .update(payload)
++        .eq('id', state.editingKittenId);
++      if (error) throw error;
++      showToast('Chaton mis à jour.');
++    } else {
++      payload.created_at = new Date().toISOString();
++      const { error } = await supabase.from('kittens').insert([payload]);
++      if (error) throw error;
++      showToast('Nouveau chaton enregistré.');
++    }
++
++    await loadKittens({ silent: true });
++    resetKittenForm();
++  } catch (error) {
++    console.error('Enregistrement du chaton échoué', error);
++    setAlert("Impossible d'enregistrer le chaton : " + error.message);
++  }
++}
++
++function startKittenEdition(kitten) {
++  state.editingKittenId = kitten.id;
++  dom.kittenForm.querySelector('#kitten-form-title').textContent = 'Modifier un chaton';
++  renderKittenFormOptions();
++  dom.kittenForm.elements['litter_id'].value = kitten.litter_id || '';
++  dom.kittenForm.elements['name'].value = kitten.name || '';
++  dom.kittenForm.elements['sex'].value = kitten.sex || 'male';
++  dom.kittenForm.elements['color'].value = kitten.color || '';
++  dom.kittenForm.elements['birth_weight'].value = kitten.birth_weight ?? '';
++  dom.kittenForm.elements['current_weight'].value = kitten.current_weight ?? '';
++  dom.kittenForm.elements['chip_number'].value = kitten.chip_number || '';
++  dom.kittenForm.elements['passport_number'].value = kitten.passport_number || '';
++  dom.kittenForm.elements['status'].value = kitten.status || 'available';
++  dom.kittenForm.elements['notes'].value = kitten.notes || '';
++  dom.kittenForm.elements['photo_url'].value = kitten.photo_url || '';
++  setAlert('Modification d\'un chaton en cours.', 'info');
++  window.scrollTo({ top: dom.kittenForm.offsetTop - 80, behavior: 'smooth' });
++}
++
++function resetKittenForm() {
++  state.editingKittenId = null;
++  dom.kittenForm.reset();
++  dom.kittenForm.querySelector('#kitten-form-title').textContent = 'Ajouter un chaton';
++  renderKittenFormOptions();
++  setAlert('');
++}
++
++async function deleteKitten(id) {
++  if (!confirm('Supprimer ce chaton ?')) return;
++  try {
++    const supabase = requireSupabase();
++    const { error } = await supabase.from('kittens').delete().eq('id', id);
++    if (error) throw error;
++    showToast('Chaton supprimé.');
++    await loadKittens({ silent: true });
++  } catch (error) {
++    console.error('Suppression du chaton échouée', error);
++    setAlert('Impossible de supprimer le chaton : ' + error.message);
++  }
++}
++
++function escapeHtml(value) {
++  if (value == null) return '';
++  return String(value)
++    .replace(/&/g, '&amp;')
++    .replace(/</g, '&lt;')
++    .replace(/>/g, '&gt;')
++    .replace(/"/g, '&quot;')
++    .replace(/'/g, '&#39;');
++}
++
++function formatDate(value) {
++  if (!value) return '—';
++  try {
++    return new Intl.DateTimeFormat('fr-FR').format(new Date(value));
++  } catch (error) {
++    return value;
++  }
++}
++
++function formatDateTime(value) {
++  if (!value) return '—';
++  try {
++    return new Intl.DateTimeFormat('fr-FR', {
++      dateStyle: 'medium',
++      timeStyle: 'short',
++    }).format(new Date(value));
++  } catch (error) {
++    return value;
++  }
++}
++
++function formatInputDate(value) {
++  if (!value) return '';
++  const date = new Date(value);
++  if (Number.isNaN(date.getTime())) return '';
++  return date.toISOString().slice(0, 10);
++}
++
++function parseNumber(value) {
++  if (!value) return null;
++  const parsed = Number(value);
++  return Number.isFinite(parsed) ? parsed : null;
++}
+diff --git a/public/index.html b/public/index.html
+new file mode 100644
+index 0000000000000000000000000000000000000000..a5466f30b6cab283cdbd35e6f8f30c18d1455771
+--- /dev/null
++++ b/public/index.html
+@@ -0,0 +1,355 @@
++<!DOCTYPE html>
++<html lang="fr">
++  <head>
++    <meta charset="UTF-8" />
++    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
++    <title>Gestion d'élevage félin - Version HTML simple</title>
++    <link rel="stylesheet" href="styles.css" />
++  </head>
++  <body>
++    <header class="app-header">
++      <div class="branding">
++        <div class="emoji">🐾</div>
++        <div>
++          <p class="eyebrow">Élevage connecté</p>
++          <h1>Gestion d'élevage félin</h1>
++          <p class="subtitle">Pilotez votre élevage en temps réel depuis n'importe quel navigateur.</p>
++        </div>
++      </div>
++      <div class="header-actions">
++        <button id="toggle-config" class="secondary">Paramètres Supabase</button>
++      </div>
++    </header>
++
++    <section id="config-panel" class="config-panel hidden" aria-live="polite">
++      <h2>Configuration de la connexion Supabase</h2>
++      <p>
++        Les informations sont conservées localement dans votre navigateur. Remplissez-les puis
++        testez la connexion avant d'utiliser l'application.
++      </p>
++      <form id="config-form" class="form-grid">
++        <label>
++          URL Supabase
++          <input id="supabase-url" name="url" type="url" placeholder="https://xyzcompany.supabase.co" required />
++        </label>
++        <label>
++          Clé anonyme Supabase
++          <input id="supabase-key" name="key" type="password" placeholder="Votre clé publique" required />
++        </label>
++        <div class="config-actions">
++          <button type="submit" class="primary">Enregistrer</button>
++          <button id="test-connection" class="secondary" type="button">Tester la connexion</button>
++          <button id="clear-credentials" class="danger" type="button">Effacer</button>
++        </div>
++      </form>
++      <p class="hint">
++        Conseil : créez un rôle dédié dans Supabase avec des permissions limitées pour sécuriser l'accès.
++      </p>
++    </section>
++
++    <nav class="main-nav" aria-label="Navigation principale">
++      <button data-view="dashboard" class="active"><span class="nav-icon">📊</span>Tableau de bord</button>
++      <button data-view="cats"><span class="nav-icon">🐈</span>Chats</button>
++      <button data-view="litters"><span class="nav-icon">🗓️</span>Portées</button>
++      <button data-view="kittens"><span class="nav-icon">🍼</span>Chatons</button>
++    </nav>
++
++    <main>
++      <section id="alerts" class="alerts" aria-live="assertive"></section>
++
++      <section id="dashboard-view" class="view active" aria-labelledby="dashboard-title">
++        <div class="hero">
++          <div class="hero-info">
++            <p class="eyebrow">Vue d'ensemble</p>
++            <h2 id="dashboard-title">Bienvenue dans votre espace d'élevage</h2>
++            <p>Organisez vos chats, suivez vos portées et préparez vos adoptions depuis une interface pensée pour la simplicité.</p>
++            <div class="hero-actions">
++              <button class="primary" type="button" data-switch-view="cats">Ajouter un chat</button>
++              <button class="ghost" type="button" data-switch-view="litters">Planifier une portée</button>
++            </div>
++          </div>
++          <div class="hero-visual">
++            <ul class="hero-highlights">
++              <li>✔️ Statistiques instantanées sur votre élevage</li>
++              <li>✔️ Historique partagé entre chats, portées et chatons</li>
++              <li>✔️ Fonctionne sur mobile, tablette ou ordinateur</li>
++            </ul>
++          </div>
++        </div>
++
++        <div class="stats-grid" id="stats-grid">
++          <article class="stat-card emerald">
++            <div class="stat-icon">🐈</div>
++            <div class="stat-meta">
++              <h3>Total des chats</h3>
++              <p class="stat-value" data-stat="totalCats">0</p>
++              <p class="stat-detail" data-stat="activeCats">0 actifs</p>
++            </div>
++          </article>
++          <article class="stat-card mint">
++            <div class="stat-icon">🗓️</div>
++            <div class="stat-meta">
++              <h3>Total des portées</h3>
++              <p class="stat-value" data-stat="totalLitters">0</p>
++              <p class="stat-detail" data-stat="activeLitters">0 en cours</p>
++            </div>
++          </article>
++          <article class="stat-card lime">
++            <div class="stat-icon">🍼</div>
++            <div class="stat-meta">
++              <h3>Total des chatons</h3>
++              <p class="stat-value" data-stat="totalKittens">0</p>
++              <p class="stat-detail" data-stat="availableKittens">0 disponibles</p>
++            </div>
++          </article>
++        </div>
++
++        <section class="quick-actions" aria-label="Actions rapides">
++          <h3>Gérez votre élevage en un clic</h3>
++          <div class="quick-actions-grid">
++            <button type="button" class="quick-card" data-switch-view="cats">
++              <span class="quick-icon">➕</span>
++              <div class="quick-info">
++                <h4>Enregistrer un chat</h4>
++                <p>Ajoutez une fiche complète avec santé, pedigree et documents.</p>
++              </div>
++            </button>
++            <button type="button" class="quick-card" data-switch-view="litters">
++              <span class="quick-icon">📅</span>
++              <div class="quick-info">
++                <h4>Suivre une portée</h4>
++                <p>Planifiez les dates clés et notez vos observations importantes.</p>
++              </div>
++            </button>
++            <button type="button" class="quick-card" data-switch-view="kittens">
++              <span class="quick-icon">🐾</span>
++              <div class="quick-info">
++                <h4>Créer une fiche chaton</h4>
++                <p>Préparez vos dossiers d'adoption en quelques secondes.</p>
++              </div>
++            </button>
++          </div>
++        </section>
++
++        <article class="insights">
++          <h3>Conseils pour tirer le meilleur de votre tableau de bord</h3>
++          <div class="insights-grid">
++            <section>
++              <h4>Centralisez vos données</h4>
++              <p>Utilisez les formulaires pour stocker les informations de santé, les numéros de puce et les documents essentiels afin de garder vos dossiers toujours à jour.</p>
++            </section>
++            <section>
++              <h4>Restez proactif</h4>
++              <p>Consultez vos statistiques et vos filtres pour repérer rapidement les portées à venir ou les chatons disponibles et organiser vos rendez-vous.</p>
++            </section>
++            <section>
++              <h4>Travaillez en mobilité</h4>
++              <p>La page s'adapte aux mobiles : mettez à jour le poids des chatons directement depuis la nurserie pour conserver un suivi précis jour après jour.</p>
++            </section>
++          </div>
++        </article>
++      </section>
++
++      <section id="cats-view" class="view" aria-labelledby="cats-title">
++        <header class="view-header">
++          <div>
++            <h2 id="cats-title">Chats reproducteurs</h2>
++            <p>Ajoutez, modifiez ou archivez vos chats sans quitter la page.</p>
++          </div>
++          <div class="view-actions">
++            <button id="refresh-cats" class="secondary">Rafraîchir</button>
++            <span class="badge" id="cat-count">0 chat(s)</span>
++          </div>
++        </header>
++
++        <form id="cat-form" class="entity-form">
++          <h3 id="cat-form-title">Ajouter un chat</h3>
++          <div class="form-grid">
++            <label>Nom<input name="name" required /></label>
++            <label>Date de naissance<input name="birth_date" type="date" required /></label>
++            <label>Sexe
++              <select name="sex" required>
++                <option value="male">Mâle</option>
++                <option value="female">Femelle</option>
++              </select>
++            </label>
++            <label>Couleur<input name="color" /></label>
++            <label>Race<input name="breed" /></label>
++            <label>Poids (kg)<input name="weight" type="number" step="0.01" min="0" /></label>
++            <label>N° de puce<input name="chip_number" /></label>
++            <label>N° de passeport<input name="passport_number" /></label>
++            <label>Photo (URL)<input name="photo_url" type="url" /></label>
++            <label class="full">Notes<textarea name="notes" rows="2"></textarea></label>
++            <label class="checkbox"><input name="is_active" type="checkbox" checked /> Actif pour la reproduction</label>
++          </div>
++          <div class="form-actions">
++            <button class="primary" type="submit">Enregistrer</button>
++            <button id="cancel-cat-edit" class="secondary" type="button">Annuler</button>
++          </div>
++        </form>
++
++        <div class="table-container">
++          <table>
++            <thead>
++              <tr>
++                <th>Nom</th>
++                <th>Sexe</th>
++                <th>Race</th>
++                <th>Statut</th>
++                <th>Mise à jour</th>
++                <th>Actions</th>
++              </tr>
++            </thead>
++            <tbody id="cat-table-body"></tbody>
++          </table>
++        </div>
++      </section>
++
++      <section id="litters-view" class="view" aria-labelledby="litters-title">
++        <header class="view-header">
++          <div>
++            <h2 id="litters-title">Portées</h2>
++            <p>Suivez chaque portée de la planification au sevrage.</p>
++          </div>
++          <div class="view-actions">
++            <label>Filtrer par statut
++              <select id="litter-filter">
++                <option value="all">Toutes</option>
++                <option value="planned">Planifiée</option>
++                <option value="pregnant">Gestation</option>
++                <option value="born">Née</option>
++                <option value="weaned">Sevrée</option>
++              </select>
++            </label>
++            <button id="refresh-litters" class="secondary">Rafraîchir</button>
++            <span class="badge" id="litter-count">0 portée(s)</span>
++          </div>
++        </header>
++
++        <form id="litter-form" class="entity-form">
++          <h3 id="litter-form-title">Ajouter une portée</h3>
++          <div class="form-grid">
++            <label>Mère<select name="mother_id" required></select></label>
++            <label>Père<select name="father_id" required></select></label>
++            <label>Date d'accouplement<input name="mating_date" type="date" required /></label>
++            <label>Date de mise bas estimée<input name="expected_birth_date" type="date" required /></label>
++            <label>Date de mise bas<input name="birth_date" type="date" /></label>
++            <label>Chatons (total)<input name="kitten_count" type="number" min="0" /></label>
++            <label>Mâles<input name="male_count" type="number" min="0" /></label>
++            <label>Femelles<input name="female_count" type="number" min="0" /></label>
++            <label>Statut
++              <select name="status" required>
++                <option value="planned">Planifiée</option>
++                <option value="pregnant">Gestation</option>
++                <option value="born">Née</option>
++                <option value="weaned">Sevrée</option>
++              </select>
++            </label>
++            <label class="full">Notes<textarea name="notes" rows="2"></textarea></label>
++          </div>
++          <div class="form-actions">
++            <button class="primary" type="submit">Enregistrer</button>
++            <button id="cancel-litter-edit" class="secondary" type="button">Annuler</button>
++          </div>
++        </form>
++
++        <div class="table-container">
++          <table>
++            <thead>
++              <tr>
++                <th>Mère</th>
++                <th>Père</th>
++                <th>Accouplement</th>
++                <th>Naissance</th>
++                <th>Statut</th>
++                <th>Chatons</th>
++                <th>Actions</th>
++              </tr>
++            </thead>
++            <tbody id="litter-table-body"></tbody>
++          </table>
++        </div>
++      </section>
++
++      <section id="kittens-view" class="view" aria-labelledby="kittens-title">
++        <header class="view-header">
++          <div>
++            <h2 id="kittens-title">Chatons</h2>
++            <p>Conservez la fiche de chaque chaton pour vos futurs adoptants.</p>
++          </div>
++          <div class="view-actions">
++            <label>Filtrer par statut
++              <select id="kitten-filter">
++                <option value="all">Tous</option>
++                <option value="available">Disponible</option>
++                <option value="reserved">Réservé</option>
++                <option value="sold">Vendu</option>
++                <option value="kept">Gardé</option>
++              </select>
++            </label>
++            <button id="refresh-kittens" class="secondary">Rafraîchir</button>
++            <span class="badge" id="kitten-count">0 chaton(s)</span>
++          </div>
++        </header>
++
++        <form id="kitten-form" class="entity-form">
++          <h3 id="kitten-form-title">Ajouter un chaton</h3>
++          <div class="form-grid">
++            <label>Portée<select name="litter_id" required></select></label>
++            <label>Nom<input name="name" required /></label>
++            <label>Sexe
++              <select name="sex" required>
++                <option value="male">Mâle</option>
++                <option value="female">Femelle</option>
++              </select>
++            </label>
++            <label>Couleur<input name="color" /></label>
++            <label>Poids naissance (g)<input name="birth_weight" type="number" min="0" /></label>
++            <label>Poids actuel (g)<input name="current_weight" type="number" min="0" /></label>
++            <label>N° de puce<input name="chip_number" /></label>
++            <label>N° de passeport<input name="passport_number" /></label>
++            <label>Statut
++              <select name="status" required>
++                <option value="available">Disponible</option>
++                <option value="reserved">Réservé</option>
++                <option value="sold">Vendu</option>
++                <option value="kept">Gardé</option>
++              </select>
++            </label>
++            <label class="full">Notes<textarea name="notes" rows="2"></textarea></label>
++            <label class="full">Photo (URL)<input name="photo_url" type="url" /></label>
++          </div>
++          <div class="form-actions">
++            <button class="primary" type="submit">Enregistrer</button>
++            <button id="cancel-kitten-edit" class="secondary" type="button">Annuler</button>
++          </div>
++        </form>
++
++        <div class="table-container">
++          <table>
++            <thead>
++              <tr>
++                <th>Nom</th>
++                <th>Portée</th>
++                <th>Statut</th>
++                <th>Poids (g)</th>
++                <th>Mise à jour</th>
++                <th>Actions</th>
++              </tr>
++            </thead>
++            <tbody id="kitten-table-body"></tbody>
++          </table>
++        </div>
++      </section>
++    </main>
++
++    <div id="toast" class="toast" role="status" aria-live="polite"></div>
++
++    <footer class="app-footer">
++      <small>Version HTML autonome. Les données sont fournies par Supabase.</small>
++    </footer>
++
++    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" integrity="sha384-UxNw2K6JqqPiR+jYwIV/pY5Pja/qWhDnwoSt1ZEmix5lTMMURmYNmM6SlpCboStz" crossorigin="anonymous"></script>
++    <script type="module" src="app.js"></script>
++  </body>
++</html>
+diff --git a/public/styles.css b/public/styles.css
+new file mode 100644
+index 0000000000000000000000000000000000000000..0975a5c4cdcbf80ffe04b7e6dbc21301fde958a6
+--- /dev/null
++++ b/public/styles.css
+@@ -0,0 +1,712 @@
++:root {
++  color-scheme: light;
++  --bg: linear-gradient(180deg, #f2fbf6 0%, #e6f6ee 100%);
++  --surface: #ffffff;
++  --surface-alt: #f3fbf6;
++  --text: #0f2f25;
++  --text-muted: #4a6a60;
++  --border: #d7ede2;
++  --primary: #12b76a;
++  --primary-dark: #039855;
++  --primary-rgb: 18, 183, 106;
++  --green: #039855;
++  --amber: #f4b740;
++  --red: #e94235;
++  --emerald-gradient: linear-gradient(135deg, #1cd97e, #00a35c);
++  --mint-gradient: linear-gradient(135deg, #9bf6a5, #46cf7d);
++  --lime-gradient: linear-gradient(135deg, #d7ff88, #8be05e);
++  --shadow: 0 18px 40px rgba(14, 74, 48, 0.12);
++}
++
++* {
++  box-sizing: border-box;
++}
++
++body {
++  margin: 0;
++  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
++  background: var(--bg);
++  color: var(--text);
++  min-height: 100vh;
++  display: flex;
++  flex-direction: column;
++  background-attachment: fixed;
++}
++
++.app-header {
++  background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.16), rgba(4, 120, 87, 0.18));
++  box-shadow: var(--shadow);
++  padding: 2rem clamp(1.5rem, 4vw, 3.5rem);
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  gap: 1.5rem;
++  border-bottom: 1px solid var(--border);
++}
++
++.branding {
++  display: flex;
++  align-items: center;
++  gap: 1rem;
++}
++
++.branding .emoji {
++  font-size: 2.8rem;
++}
++
++.eyebrow {
++  text-transform: uppercase;
++  font-size: 0.75rem;
++  letter-spacing: 0.18em;
++  margin: 0;
++  color: rgba(15, 47, 37, 0.65);
++}
++
++.subtitle {
++  margin: 0.4rem 0 0;
++  color: rgba(15, 47, 37, 0.75);
++  max-width: 42rem;
++}
++
++.header-actions {
++  display: flex;
++  gap: 0.75rem;
++}
++
++.main-nav {
++  display: flex;
++  gap: 0.75rem;
++  padding: 1rem clamp(1.5rem, 3vw, 3rem);
++  border-bottom: 1px solid var(--border);
++  background: rgba(255, 255, 255, 0.92);
++  backdrop-filter: blur(10px);
++  position: sticky;
++  top: 0;
++  z-index: 10;
++}
++
++.main-nav button {
++  border: none;
++  padding: 0.65rem 1.4rem;
++  border-radius: 999px;
++  background: transparent;
++  color: var(--text-muted);
++  font-weight: 600;
++  cursor: pointer;
++  display: inline-flex;
++  align-items: center;
++  gap: 0.5rem;
++  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
++}
++
++.nav-icon {
++  font-size: 1.25rem;
++  line-height: 1;
++}
++
++.main-nav button:hover,
++.main-nav button:focus-visible {
++  background: rgba(var(--primary-rgb), 0.12);
++  color: var(--primary);
++  outline: none;
++  transform: translateY(-1px);
++}
++
++.main-nav button.active {
++  background: var(--primary);
++  color: #fff;
++  box-shadow: 0 12px 24px rgba(var(--primary-rgb), 0.28);
++}
++
++main {
++  flex: 1;
++  padding: clamp(1.8rem, 4vw, 3.5rem);
++  display: grid;
++  gap: 2.5rem;
++}
++
++.view {
++  display: none;
++  background: var(--surface);
++  border-radius: 1.5rem;
++  padding: clamp(1.8rem, 4vw, 2.8rem);
++  box-shadow: var(--shadow);
++  border: 1px solid rgba(var(--primary-rgb), 0.05);
++}
++
++.view.active {
++  display: block;
++}
++
++.view-header {
++  display: flex;
++  flex-wrap: wrap;
++  justify-content: space-between;
++  align-items: center;
++  gap: 1.25rem;
++  margin-bottom: 1.5rem;
++}
++
++.view-header h2 {
++  margin: 0 0 0.25rem;
++}
++
++.view-actions {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 1rem;
++  align-items: center;
++}
++
++.badge {
++  background: var(--surface-alt);
++  border-radius: 999px;
++  padding: 0.3rem 0.9rem;
++  font-size: 0.85rem;
++  color: var(--text-muted);
++}
++
++.stats-grid {
++  display: grid;
++  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
++  gap: 1.5rem;
++  margin-bottom: 2.5rem;
++}
++
++.stat-card {
++  padding: 1.8rem;
++  border-radius: 1.5rem;
++  color: #083821;
++  box-shadow: 0 20px 35px rgba(14, 74, 48, 0.12);
++  display: flex;
++  align-items: center;
++  gap: 1.25rem;
++  position: relative;
++  overflow: hidden;
++  isolation: isolate;
++}
++
++.stat-card::after {
++  content: '';
++  position: absolute;
++  inset: 0;
++  background: rgba(255, 255, 255, 0.1);
++  mix-blend-mode: soft-light;
++  opacity: 0.6;
++  pointer-events: none;
++}
++
++.stat-card .stat-icon {
++  font-size: 2rem;
++  background: rgba(255, 255, 255, 0.25);
++  padding: 1rem;
++  border-radius: 1rem;
++  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
++}
++
++.stat-card .stat-meta {
++  position: relative;
++  z-index: 1;
++  color: #0f2f25;
++}
++
++.stat-card h3 {
++  margin: 0 0 0.5rem;
++  font-size: 0.95rem;
++  letter-spacing: 0.08em;
++  text-transform: uppercase;
++  opacity: 0.8;
++}
++
++.stat-value {
++  font-size: clamp(2.2rem, 4vw, 3rem);
++  font-weight: 700;
++  margin: 0;
++}
++
++.stat-detail {
++  margin: 0.15rem 0 0;
++  font-size: 0.95rem;
++  opacity: 0.85;
++}
++
++.stat-card.emerald {
++  background: var(--emerald-gradient);
++  color: #ffffff;
++}
++
++.stat-card.mint {
++  background: var(--mint-gradient);
++  color: #0f2f25;
++}
++
++.stat-card.lime {
++  background: var(--lime-gradient);
++  color: #0f2f25;
++}
++
++.hero {
++  display: grid;
++  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
++  gap: 2rem;
++  align-items: center;
++  background: var(--surface-alt);
++  border-radius: 1.5rem;
++  padding: clamp(1.8rem, 4vw, 2.6rem);
++  border: 1px solid rgba(var(--primary-rgb), 0.12);
++}
++
++.hero-info h2 {
++  margin: 0.3rem 0 0.75rem;
++  font-size: clamp(1.9rem, 3.2vw, 2.6rem);
++}
++
++.hero-info p {
++  margin: 0 0 1.4rem;
++  color: rgba(15, 47, 37, 0.75);
++  line-height: 1.6;
++}
++
++.hero-actions {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 0.75rem;
++}
++
++.hero-visual {
++  background: rgba(var(--primary-rgb), 0.08);
++  border-radius: 1.25rem;
++  padding: 1.5rem;
++  border: 1px dashed rgba(var(--primary-rgb), 0.2);
++}
++
++.hero-highlights {
++  margin: 0;
++  padding-left: 0;
++  display: grid;
++  gap: 0.65rem;
++  color: rgba(15, 47, 37, 0.75);
++  list-style: none;
++}
++
++.quick-actions {
++  display: grid;
++  gap: 1.4rem;
++}
++
++.quick-actions h3 {
++  margin: 0;
++}
++
++.quick-actions-grid {
++  display: grid;
++  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
++  gap: 1rem;
++}
++
++.quick-card {
++  background: var(--surface);
++  border: 1px solid rgba(var(--primary-rgb), 0.12);
++  border-radius: 1.25rem;
++  padding: 1.2rem;
++  display: flex;
++  align-items: flex-start;
++  gap: 1rem;
++  text-align: left;
++  color: inherit;
++  box-shadow: 0 16px 30px rgba(14, 74, 48, 0.08);
++}
++
++.quick-card:hover,
++.quick-card:focus-visible {
++  border-color: rgba(var(--primary-rgb), 0.35);
++  box-shadow: 0 18px 36px rgba(14, 74, 48, 0.12);
++}
++
++.quick-icon {
++  width: 42px;
++  height: 42px;
++  display: inline-flex;
++  align-items: center;
++  justify-content: center;
++  border-radius: 50%;
++  background: rgba(var(--primary-rgb), 0.12);
++  color: var(--primary);
++  font-size: 1.4rem;
++}
++
++.quick-info h4 {
++  margin: 0 0 0.4rem;
++  font-size: 1.05rem;
++}
++
++.quick-info p {
++  margin: 0;
++  color: var(--text-muted);
++  line-height: 1.5;
++}
++
++.insights {
++  background: var(--surface-alt);
++  border-radius: 1.5rem;
++  padding: clamp(1.6rem, 3vw, 2.4rem);
++  display: grid;
++  gap: 1.5rem;
++  border: 1px solid rgba(var(--primary-rgb), 0.12);
++}
++
++.insights h3 {
++  margin: 0;
++}
++
++.insights-grid {
++  display: grid;
++  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
++  gap: 1.25rem;
++}
++
++.insights-grid section {
++  background: var(--surface);
++  border-radius: 1rem;
++  padding: 1.25rem;
++  box-shadow: 0 15px 30px rgba(14, 74, 48, 0.08);
++  display: grid;
++  gap: 0.75rem;
++  border: 1px solid rgba(var(--primary-rgb), 0.1);
++}
++
++.insights-grid h4 {
++  margin: 0;
++  font-size: 1.05rem;
++}
++
++.insights-grid p {
++  margin: 0;
++  color: var(--text-muted);
++  line-height: 1.55;
++}
++
++.entity-form {
++  background: var(--surface-alt);
++  border-radius: 1rem;
++  padding: clamp(1rem, 2vw, 1.5rem);
++  margin-bottom: 1.75rem;
++  display: grid;
++  gap: 1rem;
++}
++
++.entity-form h3 {
++  margin: 0;
++}
++
++.form-grid {
++  display: grid;
++  gap: 1rem;
++  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
++}
++
++.form-grid label {
++  display: grid;
++  gap: 0.35rem;
++  font-weight: 600;
++  color: var(--text-muted);
++}
++
++.form-grid input,
++.form-grid select,
++.form-grid textarea {
++  border: 1px solid var(--border);
++  border-radius: 0.75rem;
++  padding: 0.65rem 0.75rem;
++  font: inherit;
++  transition: border-color 0.2s ease, box-shadow 0.2s ease;
++  background: #fff;
++}
++
++.form-grid input:focus,
++.form-grid select:focus,
++.form-grid textarea:focus {
++  border-color: var(--primary);
++  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.18);
++  outline: none;
++}
++
++.form-grid .checkbox {
++  display: flex;
++  align-items: center;
++  gap: 0.5rem;
++  font-weight: 500;
++}
++
++.form-grid .full {
++  grid-column: 1 / -1;
++}
++
++.form-actions {
++  display: flex;
++  gap: 0.75rem;
++}
++
++button {
++  font: inherit;
++  border-radius: 0.75rem;
++  cursor: pointer;
++  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
++}
++
++button.primary {
++  background: var(--primary);
++  color: #fff;
++  border: none;
++  padding: 0.7rem 1.5rem;
++  box-shadow: 0 12px 25px rgba(var(--primary-rgb), 0.25);
++}
++
++button.primary:hover,
++button.primary:focus-visible {
++  background: var(--primary-dark);
++  transform: translateY(-1px);
++}
++
++button.secondary {
++  background: rgba(var(--primary-rgb), 0.12);
++  color: var(--primary);
++  border: none;
++  padding: 0.65rem 1.25rem;
++}
++
++button.secondary:hover,
++button.secondary:focus-visible {
++  background: rgba(var(--primary-rgb), 0.22);
++}
++
++button.ghost {
++  background: rgba(255, 255, 255, 0.65);
++  color: var(--primary-dark);
++  border: 1px solid rgba(var(--primary-rgb), 0.25);
++  padding: 0.65rem 1.35rem;
++  box-shadow: none;
++}
++
++button.ghost:hover,
++button.ghost:focus-visible {
++  background: rgba(255, 255, 255, 0.85);
++  border-color: rgba(var(--primary-rgb), 0.4);
++  transform: translateY(-1px);
++}
++
++button.danger {
++  background: rgba(220, 38, 38, 0.12);
++  color: var(--red);
++  border: none;
++  padding: 0.65rem 1.25rem;
++}
++
++button.danger:hover,
++button.danger:focus-visible {
++  background: rgba(220, 38, 38, 0.2);
++}
++
++button.small {
++  padding: 0.45rem 0.9rem;
++  font-size: 0.9rem;
++}
++
++.table-container {
++  overflow-x: auto;
++  border-radius: 1.2rem;
++  box-shadow: var(--shadow);
++  border: 1px solid rgba(15, 47, 37, 0.04);
++}
++
++table {
++  width: 100%;
++  border-collapse: collapse;
++  min-width: 720px;
++}
++
++thead {
++  background: var(--surface-alt);
++}
++
++th,
++td {
++  text-align: left;
++  padding: 0.9rem 1rem;
++  border-bottom: 1px solid var(--border);
++}
++
++tr:last-child td {
++  border-bottom: none;
++}
++
++tr:hover td {
++  background: rgba(var(--primary-rgb), 0.06);
++}
++
++.status-pill {
++  border-radius: 999px;
++  padding: 0.25rem 0.75rem;
++  font-size: 0.85rem;
++  font-weight: 600;
++  display: inline-block;
++}
++
++.status-pill.active {
++  background: rgba(var(--primary-rgb), 0.12);
++  color: var(--primary);
++}
++
++.status-pill.inactive {
++  background: rgba(148, 163, 184, 0.15);
++  color: #475569;
++}
++
++.status-pill.planned {
++  background: rgba(14, 165, 233, 0.18);
++  color: #0ea5e9;
++}
++
++.status-pill.pregnant {
++  background: rgba(245, 158, 11, 0.2);
++  color: #d97706;
++}
++
++.status-pill.born {
++  background: rgba(34, 197, 94, 0.18);
++  color: #15803d;
++}
++
++.status-pill.weaned {
++  background: rgba(var(--primary-rgb), 0.18);
++  color: var(--primary-dark);
++}
++
++.status-pill.available {
++  background: rgba(16, 185, 129, 0.18);
++  color: #0f766e;
++}
++
++.status-pill.reserved {
++  background: rgba(245, 158, 11, 0.18);
++  color: #b45309;
++}
++
++.status-pill.sold {
++  background: rgba(249, 115, 22, 0.18);
++  color: #c2410c;
++}
++
++.status-pill.kept {
++  background: rgba(45, 212, 191, 0.18);
++  color: #0f766e;
++}
++
++.config-panel {
++  margin: 1.5rem clamp(1.5rem, 3vw, 3rem);
++  padding: clamp(1.25rem, 2.5vw, 2rem);
++  background: var(--surface);
++  border-radius: 1.25rem;
++  box-shadow: var(--shadow);
++  border: 1px solid rgba(var(--primary-rgb), 0.1);
++  display: grid;
++  gap: 1rem;
++}
++
++.config-panel.hidden {
++  display: none;
++}
++
++.config-actions {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 0.75rem;
++  margin-top: 0.5rem;
++}
++
++.alerts {
++  min-height: 1.5rem;
++  color: var(--red);
++  font-weight: 600;
++}
++
++.toast {
++  position: fixed;
++  bottom: 1.5rem;
++  right: 1.5rem;
++  padding: 0.85rem 1.25rem;
++  border-radius: 0.75rem;
++  background: rgba(17, 24, 39, 0.9);
++  color: white;
++  opacity: 0;
++  pointer-events: none;
++  transform: translateY(10px);
++  transition: opacity 0.2s ease, transform 0.2s ease;
++  z-index: 20;
++  box-shadow: var(--shadow);
++}
++
++.toast.visible {
++  opacity: 1;
++  transform: translateY(0);
++}
++
++.app-footer {
++  text-align: center;
++  padding: 1.5rem;
++  color: var(--text-muted);
++}
++
++@media (max-width: 720px) {
++  .app-header,
++  .main-nav,
++  main {
++    padding-left: 1rem;
++    padding-right: 1rem;
++  }
++
++  table {
++    min-width: 560px;
++  }
++}
++
++.empty-row td {
++  text-align: center;
++  padding: 2rem 1rem;
++  color: var(--text-muted);
++}
++
++.badge.success {
++  background: rgba(22, 163, 74, 0.18);
++  color: var(--green);
++}
++
++.badge.warning {
++  background: rgba(245, 158, 11, 0.18);
++  color: var(--amber);
++}
++
++.badge.error {
++  background: rgba(220, 38, 38, 0.18);
++  color: var(--red);
++}
++
++.muted {
++  color: var(--text-muted);
++  font-size: 0.85rem;
++  margin-top: 0.25rem;
++}
++
++.table-actions {
++  display: flex;
++  gap: 0.5rem;
++  flex-wrap: wrap;
++}
++
++.alerts[data-type="info"] {
++  color: var(--primary);
++}
++
++.alerts[data-type="success"] {
++  color: var(--green);
++}
